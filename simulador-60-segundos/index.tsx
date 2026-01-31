@@ -1,6 +1,8 @@
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import './index.css'; // Importing CSS so Vite processes it
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
