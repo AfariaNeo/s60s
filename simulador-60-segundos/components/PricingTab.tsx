@@ -145,7 +145,7 @@ export default function PricingTab({
                 {results ? (
                     <div className="space-y-6">
                         {/* Main Result */}
-                        <div className="bg-white rounded-2xl shadow-sm border p-8 text-center relative overflow-hidden">
+                        <div className="bg-white rounded-2xl shadow-sm border p-4 md:p-8 text-center relative overflow-hidden">
                             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 to-emerald-600"></div>
 
                             <h3 className="text-gray-500 uppercase tracking-wide text-sm font-bold mb-3 flex justify-center items-center gap-2">
@@ -153,7 +153,7 @@ export default function PricingTab({
                                 {params.mode === 'calculate_listing_price' ? 'Preço Recomendado de Anúncio' : 'Valor Líquido no Bolso'}
                             </h3>
 
-                            <p className="text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
+                            <p className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
                                 {formatCurrency(params.mode === 'calculate_listing_price' ? results.listingPrice : results.netValue)}
                             </p>
 

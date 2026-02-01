@@ -1,5 +1,4 @@
 [build]
-  base = "simulador-60-segundos"
   command = "npm run build"
   publish = "dist"
 

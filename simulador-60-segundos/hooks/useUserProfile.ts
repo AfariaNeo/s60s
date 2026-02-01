@@ -107,34 +107,56 @@ export function useUserProfile(user: User | null) {
     }, [user]);
 
     const incrementUsage = async (): Promise<boolean> => {
-        if (!user || !profile) return false;
-
-        // Optimistic update
-        const newCount = profile.usageCount + 1;
-        setProfile({ ...profile, usageCount: newCount });
+        if (!user) return false;
 
         try {
-            // Need to map back to DB column names if they differ. 
-            // Assuming DB uses snake_case: usage_count
-            // And Type uses camelCase: usageCount
-            // I need to confirm the mapping.
-            // Let's assume for now I should handle mapping if `data` from select was snake_case.
-            // In the fetch above: `const currentProfile = data as UserProfile;`
-            // If DB returns `usage_count`, but UserProfile has `usageCount`, this alias cast is WRONG (runtime undefined).
+            // 1. Fetch fresh profile data to prevent race conditions
+            const { data: freshProfile, error: fetchError } = await supabase
+                .from('profiles')
+                .select('usage_count, plan')
+                .eq('id', user.id)
+                .single();
 
-            // I will FIX the hook to map correctly below.
-
-            const { error } = await supabase.from('profiles').update({ usage_count: newCount }).eq('id', user.id);
-            if (error) {
-                // Revert on error
-                setProfile({ ...profile });
-                console.error('Error incrementing usage:', error);
+            if (fetchError || !freshProfile) {
+                console.error('Error fetching fresh profile for usage check:', fetchError);
                 return false;
             }
+
+            const currentUsage = freshProfile.usage_count;
+            const currentPlan = freshProfile.plan as UserPlan;
+
+            // 2. Check Limit Server-Side
+            const USAGE_LIMIT = 5;
+
+            if (currentPlan !== 'plus' && currentUsage >= USAGE_LIMIT) {
+                // Limit reached
+                if (profile) {
+                    setProfile({ ...profile, usageCount: currentUsage });
+                }
+                return false;
+            }
+
+            // 3. Increment
+            const newCount = currentUsage + 1;
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ usage_count: newCount })
+                .eq('id', user.id);
+
+            if (updateError) {
+                console.error('Error incrementing usage:', updateError);
+                return false;
+            }
+
+            // 4. Update local state
+            if (profile) {
+                setProfile({ ...profile, usageCount: newCount });
+            }
+
             return true;
+
         } catch (err) {
-            console.error(err);
-            setProfile({ ...profile });
+            console.error('Unexpected error in incrementUsage:', err);
             return false;
         }
     };

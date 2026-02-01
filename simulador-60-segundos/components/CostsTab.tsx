@@ -148,12 +148,12 @@ export default function CostsTab({
                     <div className="space-y-6">
 
                         {/* Total Inicial Necessário */}
-                        <div className="bg-white rounded-2xl shadow-sm border p-8 text-center relative overflow-hidden">
+                        <div className="bg-white rounded-2xl shadow-sm border p-4 md:p-8 text-center relative overflow-hidden">
                             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 to-emerald-600"></div>
                             <h3 className="text-gray-500 uppercase tracking-wide text-sm font-bold mb-3 flex justify-center items-center gap-2">
                                 <DollarSign className="w-4 h-4" /> Desembolso Inicial Total
                             </h3>
-                            <p className="text-5xl font-extrabold text-gray-900 mb-2 tracking-tight">
+                            <p className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-2 tracking-tight">
                                 {formatCurrency(results.totalCostValue)}
                             </p>
                             <p className="text-emerald-600 font-medium">

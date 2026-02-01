@@ -1,7 +1,0 @@
-{
-    "name": "root-project",
-    "version": "1.0.0",
-    "scripts": {
-        "build": "cd simulador-60-segundos && npm install && npm run build"
-    }
-}
