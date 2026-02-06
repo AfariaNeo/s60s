@@ -136,7 +136,7 @@ export default function AuthPage() {
                                 </div>
                                 <div className="relative flex justify-center text-sm">
                                     <span className="px-2 bg-white text-gray-500">
-                                        Esqueceu a senha? <button onClick={() => alert("Configure o reset de senha no Supabase")} className="text-emerald-600 hover:underline">Recuperar</button>
+                                        Esqueceu a senha? <button type="button" onClick={() => alert("Configure o reset de senha no Supabase")} className="text-emerald-600 hover:underline">Recuperar</button>
                                     </span>
                                 </div>
                             </div>

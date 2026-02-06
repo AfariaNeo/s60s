@@ -29,6 +29,7 @@ export default function SimulatorApp() {
       <AnalyticsTracker />
       <Routes>
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/legal" element={<LegalPage />} />
         <Route
           path="/login"
           element={!user ? <AuthPage /> : <Navigate to="/" />}
