@@ -20,7 +20,16 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
   const handleSubscribe = async (plan: UserPlan, cycle: 'monthly' | 'annual') => {
     setIsLoading(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) {
+        alert("Sessão expirada. Faça login novamente.");
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('create-payment', {
+        headers: { Authorization: `Bearer ${token}` },
         body: { billingCycle: cycle }
       });
 
