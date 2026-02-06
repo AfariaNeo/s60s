@@ -26,7 +26,12 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
 
       if (error) {
         console.error("Function Error:", error);
-        alert('Erro ao comunicar com o servidor de pagamento. Tente novamente.');
+        // Extract error message if possible
+        let errorMsg = "Erro desconhecido";
+        if (error instanceof Error) errorMsg = error.message;
+        else if (typeof error === 'object' && error !== null) errorMsg = JSON.stringify(error);
+
+        alert(`Erro do sistema: ${errorMsg}`);
         return;
       }
 
