@@ -29,8 +29,8 @@ export default function LandingPage() {
 
                         {/* Desktop Nav */}
                         <nav className="hidden md:flex items-center gap-8">
-                            <button onClick={() => scrollToSection('features')} className="text-gray-600 hover:text-emerald-600 font-medium">Recursos</button>
-                            <button onClick={() => scrollToSection('benefits')} className="text-gray-600 hover:text-emerald-600 font-medium">Vantagens</button>
+                            <button onClick={() => scrollToSection('benefits')} className="text-gray-600 hover:text-emerald-600 font-medium">Desafios</button>
+                            <button onClick={() => scrollToSection('features')} className="text-gray-600 hover:text-emerald-600 font-medium">Vantagens</button>
                             <button onClick={() => scrollToSection('pricing')} className="text-gray-600 hover:text-emerald-600 font-medium">Planos</button>
                             <button
                                 onClick={() => navigate('/login')}
@@ -50,8 +50,8 @@ export default function LandingPage() {
                 {/* Mobile Nav */}
                 {isMenuOpen && (
                     <div className="md:hidden bg-white border-b border-gray-100 p-4 space-y-4">
-                        <button onClick={() => scrollToSection('features')} className="block w-full text-left text-gray-600 font-medium">Recursos</button>
-                        <button onClick={() => scrollToSection('benefits')} className="block w-full text-left text-gray-600 font-medium">Vantagens</button>
+                        <button onClick={() => scrollToSection('benefits')} className="block w-full text-left text-gray-600 font-medium">Desafios</button>
+                        <button onClick={() => scrollToSection('features')} className="block w-full text-left text-gray-600 font-medium">Vantagens</button>
                         <button onClick={() => scrollToSection('pricing')} className="block w-full text-left text-gray-600 font-medium">Planos</button>
                         <button onClick={() => navigate('/login')} className="block w-full text-center bg-emerald-600 text-white py-2 rounded-lg font-bold">Acessar App</button>
                     </div>
@@ -103,7 +103,7 @@ export default function LandingPage() {
             </section>
 
             {/* --- OBJECTIONS / PROBLEMS SECTION --- */}
-            <section className="py-20 bg-gray-50">
+            <section id="benefits" className="py-20 bg-gray-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl font-bold text-gray-900">Por que você perde vendas hoje?</h2>
@@ -119,7 +119,7 @@ export default function LandingPage() {
                         <ProblemCard
                             icon={<Calculator className="w-10 h-10 text-orange-500" />}
                             title="Confusão Financeira"
-                            description="O cliente não entende 'Amortização' ou 'Juros' e fica com medo de assinar o contrato."
+                            description="Na maioria dos casos, o cliente não entende de contas, ficando inseguro em prosseguir com a compra."
                         />
                         <ProblemCard
                             icon={<TrendingUp className="w-10 h-10 text-gray-500" />}
@@ -144,6 +144,7 @@ export default function LandingPage() {
                                 <FeatureItem title="Simulação SAC & Price" desc="Compare cenários instantaneamente e mostre a evolução das parcelas." />
                                 <FeatureItem title="Cálculos de Custos Reais" desc="ITBI, Cartório e Entrada. Mostre ao cliente o valor EXATO que ele precisa ter." />
                                 <FeatureItem title="Gestão de Comissão" desc="Saiba exatamente quanto vai receber em cada venda (Corretor, Imobiliária, Captador)." />
+                                <FeatureItem title="Precificação Inteligente" desc="Defina o valor de anúncio ideal considerando sua margem de negociação." />
                             </div>
                         </div>
                         <div className="relative">
@@ -192,7 +193,7 @@ export default function LandingPage() {
                             </div>
                             <p className="text-gray-500 mb-6 text-sm">Para quem está começando a organizar a carteira.</p>
                             <ul className="space-y-4 mb-8 text-left">
-                                <PricingCheck text="5 Simulações / dia" />
+                                <PricingCheck text="5 Simulações / mês" />
                                 <PricingCheck text="Cálculo de Comissões" />
                                 <PricingCheck text="Acesso Básico" />
                             </ul>
@@ -206,8 +207,8 @@ export default function LandingPage() {
                             <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-bl-lg">MAIS POPULAR</div>
                             <h3 className="text-xl font-semibold text-white">Profissional (Plus)</h3>
                             <div className="my-4">
-                                <span className="text-4xl font-bold text-white">R$ 29,90</span>
-                                <span className="text-emerald-200">/mês</span>
+                                <span className="text-4xl font-bold text-white">R$ 99,00</span>
+                                <span className="text-emerald-200">/ano</span>
                             </div>
                             <p className="text-emerald-200 mb-6 text-sm">Para corretores que querem alta performance.</p>
                             <ul className="space-y-4 mb-8 text-left">

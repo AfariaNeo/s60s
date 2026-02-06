@@ -44,7 +44,8 @@ export function useAuth() {
     const signOut = async () => {
         const { error } = await supabase.auth.signOut();
         if (error) console.error("Error signing out:", error);
-        setUser(null); // Force UI update immediately
+        localStorage.clear(); // Ensure all tokens are removed
+        setUser(null);
     };
 
     return { user, loading, signIn, signUp, signOut };
