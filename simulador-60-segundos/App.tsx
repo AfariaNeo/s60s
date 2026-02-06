@@ -6,6 +6,7 @@ import Dashboard from './components/Dashboard';
 import { useAuth } from './hooks/useAuth';
 import { AnalyticsTracker, initGA } from './components/AnalyticsTracker';
 import { AdminDashboard } from './components/AdminDashboard';
+import LandingPage from './components/LandingPage';
 
 // Initialize GA4
 initGA();
@@ -34,7 +35,7 @@ export default function SimulatorApp() {
         />
         <Route
           path="/"
-          element={user ? <Dashboard user={user} signOut={signOut} /> : <AuthPage />}
+          element={user ? <Dashboard user={user} signOut={signOut} /> : <LandingPage />}
         />
         {/* Redirect unknown routes to home */}
         <Route path="*" element={<Navigate to="/" />} />
