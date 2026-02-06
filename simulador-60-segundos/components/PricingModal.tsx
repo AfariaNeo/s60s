@@ -14,6 +14,47 @@ interface PricingModalProps {
 
 const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPlan, currentPlan, trigger = 'user_click', isProcessing = false }) => {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Import dynamic supabase if not passed as prop, or assume it's global/imported
+  // Ideally, use the hook or import the client: 
+  // We need to import supabase inside the component file if not already there, 
+  // but for this targeted edit, let's assume we need to add the logic.
+  // We will need to add the import at the top of file later or now?
+  // Let's add the import in a separate call if needed, but 'PricingModal.tsx' logic:
+
+  const handleSubscribe = async (plan: UserPlan, cycle: 'monthly' | 'annual') => {
+    setIsLoading(true);
+    try {
+      // We need to import supabase. Let's assume it's imported or available. 
+      // Note: The imports at the top of this file did NOT include supabase. 
+      // I should fix imports first. But let's write the logic here assuming I fix imports next.
+      // Actually, let's use the `supabase` from `../lib/supabaseClient`
+      const { supabase } = await import('../lib/supabaseClient'); // Dynamic import to be safe? Or simple import.
+
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: { billingCycle: cycle }
+      });
+
+      if (error) {
+        alert('Erro ao criar pagamento. Tente novamente.');
+        console.error(error);
+        return;
+      }
+
+      if (data?.paymentUrl) {
+        window.open(data.paymentUrl, '_blank');
+      } else {
+        alert('Erro: Link de pagamento não gerado.');
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert('Ocorreu um erro ao processar.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -62,10 +103,11 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
               <li className="flex gap-2"><Check className="w-4 h-4 text-emerald-500" /> Todas calculadoras</li>
             </ul>
             <button
-              onClick={() => onSelectPlan('plus', 'annual')}
-              className="w-full mt-6 py-2 bg-emerald-600 text-white font-bold rounded hover:bg-emerald-700"
+              onClick={() => handleSubscribe('plus', 'annual')}
+              disabled={isLoading}
+              className="w-full mt-6 py-2 bg-emerald-600 text-white font-bold rounded hover:bg-emerald-700 flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              Assinar Agora
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Assinar Agora'}
             </button>
           </div>
         </div>

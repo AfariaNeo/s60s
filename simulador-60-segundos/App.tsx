@@ -1,9 +1,14 @@
-
 import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import AuthPage from './components/AuthPage';
 import Dashboard from './components/Dashboard';
 import { useAuth } from './hooks/useAuth';
+import { AnalyticsTracker, initGA } from './components/AnalyticsTracker';
+import { AdminDashboard } from './components/AdminDashboard';
+
+// Initialize GA4
+initGA();
 
 export default function SimulatorApp() {
   // --- AUTH & USER STATE ---
@@ -18,11 +23,22 @@ export default function SimulatorApp() {
     );
   }
 
-  // If not authenticated, show Login Page
-  if (!user) {
-    return <AuthPage />;
-  }
-
-  // If authenticated, show Dashboard
-  return <Dashboard user={user} signOut={signOut} />;
+  return (
+    <BrowserRouter>
+      <AnalyticsTracker />
+      <Routes>
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route
+          path="/login"
+          element={!user ? <AuthPage /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/"
+          element={user ? <Dashboard user={user} signOut={signOut} /> : <AuthPage />}
+        />
+        {/* Redirect unknown routes to home */}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }

@@ -166,7 +166,12 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                                 {userName}
                             </span>
 
-                            <button onClick={signOut} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors" title="Sair">
+                            <button
+                                onClick={() => signOut()}
+                                className="p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
+                                title="Sair da conta"
+                                aria-label="Sair da conta"
+                            >
                                 <LogOut className="w-5 h-5" />
                             </button>
                         </div>

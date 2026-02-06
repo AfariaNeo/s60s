@@ -52,15 +52,29 @@ export function useUserProfile(user: User | null) {
                 } else if (error) {
                     throw error;
                 } else {
-                    // Start with mapping
-                    const currentProfile = {
+                    const rawData = data as any;
+                    const now = new Date();
+                    let activePlan = rawData.plan;
+
+                    if (rawData.plan === 'plus' && rawData.subscription_end_date) {
+                        const expiry = new Date(rawData.subscription_end_date);
+                        if (expiry < now) {
+                            activePlan = 'free';
+                        }
+                    }
+
+                    const currentProfile: UserProfile = {
                         ...data,
-                        usageCount: data.usage_count,
-                        lastResetDate: data.last_reset_date,
-                        subscriptionEndDate: data.subscription_end_date
+                        plan: activePlan,
+                        usageCount: rawData.usage_count ?? 0,
+                        lastResetDate: rawData.last_reset_date,
+                        subscriptionEndDate: rawData.subscription_end_date,
+                        name: rawData.name || user.email || 'Usuário',
+                        email: rawData.email || ''
                     } as UserProfile;
 
                     if (shouldResetUsage(currentProfile.lastResetDate)) {
+                        // ... (keep existing reset logic)
                         const { data: resetData, error: resetError } = await supabase
                             .from('profiles')
                             .update({
@@ -73,12 +87,15 @@ export function useUserProfile(user: User | null) {
 
                         if (resetError) throw resetError;
 
+                        // Map reset data too
                         setProfile({
                             ...resetData,
-                            usageCount: resetData.usage_count,
-                            lastResetDate: resetData.last_reset_date,
-                            subscriptionEndDate: resetData.subscription_end_date
+                            plan: activePlan, // Maintain the calculated plan expiration
+                            usageCount: (resetData as any).usage_count ?? 0,
+                            lastResetDate: (resetData as any).last_reset_date,
+                            subscriptionEndDate: (resetData as any).subscription_end_date
                         } as UserProfile);
+
                     } else {
                         setProfile(currentProfile);
                     }
