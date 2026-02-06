@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Check, X, Crown, Loader2 } from 'lucide-react';
 import { UserPlan } from '../types';
+import { supabase } from '../lib/supabaseClient';
 
 interface PricingModalProps {
   isOpen: boolean;
@@ -13,37 +14,32 @@ interface PricingModalProps {
 }
 
 const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPlan, currentPlan, trigger = 'user_click', isProcessing = false }) => {
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
   const [isLoading, setIsLoading] = useState(false);
-
-  // Import dynamic supabase if not passed as prop, or assume it's global/imported
-  // Ideally, use the hook or import the client: 
-  // We need to import supabase inside the component file if not already there, 
-  // but for this targeted edit, let's assume we need to add the logic.
-  // We will need to add the import at the top of file later or now?
-  // Let's add the import in a separate call if needed, but 'PricingModal.tsx' logic:
 
   const handleSubscribe = async (plan: UserPlan, cycle: 'monthly' | 'annual') => {
     setIsLoading(true);
     try {
-      // We need to import supabase. Let's assume it's imported or available. 
-      // Note: The imports at the top of this file did NOT include supabase. 
-      // I should fix imports first. But let's write the logic here assuming I fix imports next.
-      // Actually, let's use the `supabase` from `../lib/supabaseClient`
-      const { supabase } = await import('../lib/supabaseClient'); // Dynamic import to be safe? Or simple import.
-
       const { data, error } = await supabase.functions.invoke('create-payment', {
         body: { billingCycle: cycle }
       });
 
       if (error) {
-        alert('Erro ao criar pagamento. Tente novamente.');
-        console.error(error);
+        console.error("Function Error:", error);
+        alert('Erro ao comunicar com o servidor de pagamento. Tente novamente.');
         return;
       }
 
-      if (data?.paymentUrl) {
-        window.open(data.paymentUrl, '_blank');
+      const { paymentUrl, error: paymentError } = data;
+
+      if (paymentError) {
+        alert(`Erro: ${paymentError}`);
+        return;
+      }
+
+      if (paymentUrl) {
+        window.open(paymentUrl, '_blank');
+        onClose();
       } else {
         alert('Erro: Link de pagamento não gerado.');
       }

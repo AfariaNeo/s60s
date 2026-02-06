@@ -7,6 +7,7 @@ import { useAuth } from './hooks/useAuth';
 import { AnalyticsTracker, initGA } from './components/AnalyticsTracker';
 import { AdminDashboard } from './components/AdminDashboard';
 import LandingPage from './components/LandingPage';
+import LegalPage from './components/LegalPage';
 
 // Initialize GA4
 initGA();

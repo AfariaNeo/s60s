@@ -110,6 +110,25 @@ export default function AuthPage() {
                             </div>
                         </div>
 
+                        {!isLogin && (
+                            <div className="flex items-start mb-4">
+                                <div className="flex items-center h-5">
+                                    <input
+                                        id="terms"
+                                        name="terms"
+                                        type="checkbox"
+                                        required
+                                        className="focus:ring-emerald-500 h-4 w-4 text-emerald-600 border-gray-300 rounded"
+                                    />
+                                </div>
+                                <div className="ml-3 text-sm">
+                                    <label htmlFor="terms" className="font-medium text-gray-700">
+                                        Eu concordo com os <a href="/legal" target="_blank" className="text-emerald-600 hover:text-emerald-500">Termos e Política de Privacidade</a>
+                                    </label>
+                                </div>
+                            </div>
+                        )}
+
                         <div>
                             <button
                                 type="submit"
