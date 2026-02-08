@@ -66,9 +66,9 @@ Deno.serve(async (req) => {
             throw new Error("Missing Asaas API Key Configuration");
         }
 
-        if (!cpf) {
-            throw new Error("CPF é obrigatório para processar o pagamento.");
-        }
+        // if (!cpf) {
+        //     throw new Error("CPF é obrigatório para processar o pagamento.");
+        // } - DISABLED BY REQUEST: CPF will be collected by Asaas or optional
 
         const ASAAS_API_URL = Deno.env.get('ASAAS_API_URL') || 'https://sandbox.asaas.com/api/v3';
 

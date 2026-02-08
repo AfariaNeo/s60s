@@ -28,10 +28,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
   };
 
   const handleSubscribe = async (plan: UserPlan, cycle: 'monthly' | 'annual') => {
-    if (cpf.length < 14) {
-      alert("Por favor, digite um CPF válido para emissão da nota fiscal.");
-      return;
-    }
+    // CPF validation removed - let Asaas handle it if needed
 
     setIsLoading(true);
     try {
@@ -51,7 +48,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
 
       // Revert to default behavior: supabase-js automatically attaches Auth header
       const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: { billingCycle: cycle, cpf: cpf.replace(/\D/g, '') }
+        body: { billingCycle: cycle } // No CPF sent
       });
 
       if (error) {
@@ -73,8 +70,8 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
       }
 
       if (paymentUrl) {
-        window.open(paymentUrl, '_blank');
-        onClose();
+        // Redirect current tab to avoid popup blockers on mobile
+        window.location.href = paymentUrl;
       } else {
         alert('Erro: Link de pagamento não gerado.');
       }
@@ -98,7 +95,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
         onClick={!isProcessing ? onClose : undefined}
       />
 
-      <div className="relative bg-white rounded-2xl shadow-2xl max-w-3xl w-full animate-in fade-in zoom-in duration-200 my-4 md:my-8">
+      <div className="relative bg-white rounded-2xl shadow-2xl max-w-3xl w-full animate-in fade-in zoom-in duration-200 my-4 md:my-8 bg-white">
         <button onClick={onClose} className="absolute top-3 right-3 p-2 text-gray-400 hover:text-gray-600">
           <X className="w-6 h-6" />
         </button>
@@ -133,18 +130,6 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
               <li className="flex gap-2"><Check className="w-4 h-4 text-emerald-500" /> Uso Ilimitado</li>
               <li className="flex gap-2"><Check className="w-4 h-4 text-emerald-500" /> Todas calculadoras</li>
             </ul>
-
-            <div className="mb-4 mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">CPF (Necessário para Nota Fiscal)</label>
-              <input
-                type="text"
-                placeholder="000.000.000-00"
-                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                value={cpf}
-                onChange={(e) => setCpf(formatCPF(e.target.value))}
-                maxLength={14}
-              />
-            </div>
 
             <button
               onClick={() => handleSubscribe('plus', 'annual')}

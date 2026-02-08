@@ -153,7 +153,6 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                     </div>
 
                     <div className="flex items-center gap-3 sm:gap-4">
-                        {/* Badge do Plano */}
                         <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1 ${userPlan === 'plus' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'
                             }`}>
                             {userPlan === 'plus' && <Crown className="w-3 h-3" />}
@@ -163,10 +162,10 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                         {userPlan !== 'plus' && (
                             <button
                                 onClick={() => setIsPricingModalOpen(true)}
-                                className="hidden sm:flex items-center gap-2 bg-gray-900 text-white px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-gray-800 transition-colors"
+                                className="flex items-center gap-2 bg-gray-900 text-white px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-gray-800 transition-colors shadow-sm"
                             >
                                 <Crown className="w-3 h-3 text-yellow-400" />
-                                <span>Upgrade</span>
+                                <span className="hidden xs:inline">Upgrade</span>
                             </button>
                         )}
 
