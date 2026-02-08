@@ -86,12 +86,15 @@ Deno.serve(async (req) => {
         let customerId = customerData.data?.[0]?.id;
 
         if (customerId) {
-            // Update Existing Customer to ensure CPF is set
+            // Update Existing Customer to ensure CPF and NAME are set/updated
             console.log(`Updating customer ${customerId} with CPF...`);
             await fetch(`${ASAAS_API_URL}/customers/${customerId}`, {
                 method: 'POST', // Asaas uses POST/PUT for updates
                 headers: { 'Content-Type': 'application/json', 'access_token': asaasKey },
-                body: JSON.stringify({ cpfCnpj: cpf })
+                body: JSON.stringify({
+                    cpfCnpj: cpf,
+                    name: user.user_metadata.full_name || user.user_metadata.name || user.email,
+                })
             });
         } else {
             console.log("Creating new customer...");
@@ -99,7 +102,7 @@ Deno.serve(async (req) => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'access_token': asaasKey },
                 body: JSON.stringify({
-                    name: user.user_metadata.name || user.email,
+                    name: user.user_metadata.full_name || user.user_metadata.name || user.email,
                     email: user.email,
                     externalReference: user.id,
                     cpfCnpj: cpf

@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
-import { Calculator, Crown, LogOut, Building2, Briefcase, Tag, ScrollText } from 'lucide-react';
+import { Calculator, Crown, LogOut, Building2, Briefcase, Tag, ScrollText, User as UserIcon } from 'lucide-react';
 import { CommissionParams, CommissionResult, PricingParams, PricingResult, PurchaseCostParams, PurchaseCostResult, UserPlan } from '../types';
 import { calculateCommission, calculatePricing, calculatePurchaseCosts, formatCurrency } from '../utils/finance';
 import PricingModal from './PricingModal';
+import ProfileModal from './ProfileModal'; // Imported
 import FinancingTab from './FinancingTab';
 import CommissionTab from './CommissionTab';
 import PricingTab from './PricingTab';
@@ -28,11 +28,16 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
     const usageCount = profile?.usageCount || 0;
     const usageLimit = 5;
 
-    const userName = profile?.name || user.email || 'Usuário';
+    // Smart name resolution: Profile DB > User Metadata > Email > Default
+    const userName = profile?.name || user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'Usuário';
+
+    // Update profile object with resolved name for Modal usage
+    const displayProfile = profile ? { ...profile, name: userName } : null;
 
     // --- UI STATE ---
     const [activeTab, setActiveTab] = useState<Tab>('financing');
     const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
+    const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
     // --- OTHER TABS STATE (Legacy/Inline for now) ---
     const [commissionParams, setCommissionParams] = useState<CommissionParams>({ propertyValue: 0, totalCommissionPercent: 6, agentSharePercent: 50, calculationMode: 'percentage_of_total' });
@@ -131,6 +136,12 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                 trigger="limit_reached"
             />
 
+            <ProfileModal
+                isOpen={isProfileModalOpen}
+                onClose={() => setIsProfileModalOpen(false)}
+                profile={displayProfile}
+            />
+
             {/* Header */}
             <header className="bg-white border-b border-gray-200 sticky top-0 z-30 print:hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -162,9 +173,17 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                         <div className="h-6 w-px bg-gray-200 mx-1 hidden sm:block"></div>
 
                         <div className="flex items-center gap-3">
-                            <span className="text-sm font-medium text-gray-700 hidden md:block max-w-[150px] truncate">
-                                {userName}
-                            </span>
+                            <button
+                                onClick={() => setIsProfileModalOpen(true)}
+                                className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors focus:outline-none"
+                            >
+                                <span className="hidden md:block max-w-[150px] truncate">
+                                    {userName}
+                                </span>
+                                <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold border border-emerald-200">
+                                    {userName.charAt(0).toUpperCase()}
+                                </div>
+                            </button>
 
                             <button
                                 onClick={() => signOut()}
