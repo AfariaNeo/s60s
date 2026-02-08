@@ -16,8 +16,23 @@ interface PricingModalProps {
 const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPlan, currentPlan, trigger = 'user_click', isProcessing = false }) => {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
   const [isLoading, setIsLoading] = useState(false);
+  const [cpf, setCpf] = useState('');
+
+  const formatCPF = (value: string) => {
+    return value
+      .replace(/\D/g, '')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+      .replace(/(-\d{2})\d+?$/, '$1');
+  };
 
   const handleSubscribe = async (plan: UserPlan, cycle: 'monthly' | 'annual') => {
+    if (cpf.length < 14) {
+      alert("Por favor, digite um CPF válido para emissão da nota fiscal.");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -36,7 +51,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
 
       // Revert to default behavior: supabase-js automatically attaches Auth header
       const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: { billingCycle: cycle }
+        body: { billingCycle: cycle, cpf: cpf.replace(/\D/g, '') }
       });
 
       if (error) {
@@ -118,6 +133,19 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
               <li className="flex gap-2"><Check className="w-4 h-4 text-emerald-500" /> Uso Ilimitado</li>
               <li className="flex gap-2"><Check className="w-4 h-4 text-emerald-500" /> Todas calculadoras</li>
             </ul>
+
+            <div className="mb-4 mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">CPF (Necessário para Nota Fiscal)</label>
+              <input
+                type="text"
+                placeholder="000.000.000-00"
+                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                value={cpf}
+                onChange={(e) => setCpf(formatCPF(e.target.value))}
+                maxLength={14}
+              />
+            </div>
+
             <button
               onClick={() => handleSubscribe('plus', 'annual')}
               disabled={isLoading}

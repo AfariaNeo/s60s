@@ -49,10 +49,25 @@ Deno.serve(async (req) => {
         console.log("User Authenticated:", user.email);
 
         // 3. Logic (Asaas)
-        const { billingCycle } = await req.json().catch(() => ({}));
+        const rawBody = await req.text();
+        console.log("DEBUG: Raw Body:", rawBody);
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let body: any = {};
+        try {
+            body = JSON.parse(rawBody);
+        } catch (e) {
+            console.error("JSON Parse Error:", e);
+        }
+
+        const { billingCycle, cpf } = body;
 
         if (!asaasKey) {
             throw new Error("Missing Asaas API Key Configuration");
+        }
+
+        if (!cpf) {
+            throw new Error("CPF é obrigatório para processar o pagamento.");
         }
 
         const ASAAS_API_URL = Deno.env.get('ASAAS_API_URL') || 'https://sandbox.asaas.com/api/v3';
@@ -70,7 +85,15 @@ Deno.serve(async (req) => {
         const customerData = await customerSearch.json();
         let customerId = customerData.data?.[0]?.id;
 
-        if (!customerId) {
+        if (customerId) {
+            // Update Existing Customer to ensure CPF is set
+            console.log(`Updating customer ${customerId} with CPF...`);
+            await fetch(`${ASAAS_API_URL}/customers/${customerId}`, {
+                method: 'POST', // Asaas uses POST/PUT for updates
+                headers: { 'Content-Type': 'application/json', 'access_token': asaasKey },
+                body: JSON.stringify({ cpfCnpj: cpf })
+            });
+        } else {
             console.log("Creating new customer...");
             const newCostumerResp = await fetch(`${ASAAS_API_URL}/customers`, {
                 method: 'POST',
@@ -78,7 +101,8 @@ Deno.serve(async (req) => {
                 body: JSON.stringify({
                     name: user.user_metadata.name || user.email,
                     email: user.email,
-                    externalReference: user.id
+                    externalReference: user.id,
+                    cpfCnpj: cpf
                 })
             });
 
