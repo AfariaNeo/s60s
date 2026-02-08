@@ -6,6 +6,7 @@ import { Lock, Mail, Loader2, UserPlus, LogIn, AlertCircle } from 'lucide-react'
 export default function AuthPage() {
     const { signIn, signUp } = useAuth();
     const [isLogin, setIsLogin] = useState(true);
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -22,7 +23,7 @@ export default function AuthPage() {
             if (isLogin) {
                 await signIn(email, password);
             } else {
-                await signUp(email, password);
+                await signUp(email, password, name);
                 setMessage("Conta criada! Verifique seu email para confirmar.");
                 if (isLogin) setIsLogin(true); // Switch to login view or just show message
             }
@@ -63,6 +64,30 @@ export default function AuthPage() {
                         {message && (
                             <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-md flex items-start gap-3">
                                 <p className="text-sm text-green-700">{message}</p>
+                            </div>
+                        )}
+
+                        {!isLogin && (
+                            <div>
+                                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                                    Nome Completo
+                                </label>
+                                <div className="mt-1 relative rounded-md shadow-sm">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <UserPlus className="h-5 w-5 text-gray-400" />
+                                    </div>
+                                    <input
+                                        id="name"
+                                        name="name"
+                                        type="text"
+                                        autoComplete="name"
+                                        required
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        className="focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-2.5 border"
+                                        placeholder="Seu Nome"
+                                    />
+                                </div>
                             </div>
                         )}
 

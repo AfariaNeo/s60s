@@ -33,10 +33,15 @@ export function useAuth() {
         if (error) throw error;
     };
 
-    const signUp = async (email: string, password: string) => {
+    const signUp = async (email: string, password: string, name?: string) => {
         const { error } = await supabase.auth.signUp({
             email,
             password,
+            options: {
+                data: {
+                    full_name: name || null
+                }
+            }
         });
         if (error) throw error;
     };
