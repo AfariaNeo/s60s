@@ -28,18 +28,16 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
   };
 
   const handleSubscribe = async (plan: UserPlan, cycle: 'monthly' | 'annual') => {
-    // CPF validation removed - let Asaas handle it if needed
+    // 1. CPF Validation (Restored)
+    if (cpf.length < 14) {
+      alert("Por favor, digite um CPF válido para emissão da nota fiscal.");
+      return;
+    }
 
     setIsLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
-
-      console.log("Debug: Starting Subscription Check");
-      console.log("Debug: Session Active:", !!session);
-      console.log("Debug: Token Present:", !!token);
-      // Log the project URL to ensure we are hitting the right backend
-      console.log("Debug: VITE_SUPABASE_URL:", import.meta.env.VITE_SUPABASE_URL);
 
       if (!token) {
         alert("Sessão expirada. Faça login novamente.");
@@ -48,7 +46,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
 
       // Revert to default behavior: supabase-js automatically attaches Auth header
       const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: { billingCycle: cycle } // No CPF sent
+        body: { billingCycle: cycle, cpf: cpf.replace(/\D/g, '') } // Sending CPF again
       });
 
       if (error) {
@@ -126,10 +124,23 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-bold">RECOMENDADO</div>
             <h3 className="font-bold text-xl">Profissional</h3>
             <p className="text-2xl font-bold mt-2">R$ 99,00<span className="text-sm font-normal text-gray-500">/ano</span></p>
+            <p className="text-xs text-center text-emerald-600 font-medium mt-1 mb-4">Renovação Automática</p>
             <ul className="mt-4 space-y-2 text-sm text-gray-600">
               <li className="flex gap-2"><Check className="w-4 h-4 text-emerald-500" /> Uso Ilimitado</li>
               <li className="flex gap-2"><Check className="w-4 h-4 text-emerald-500" /> Todas calculadoras</li>
             </ul>
+
+            <div className="mb-4 mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">CPF (Necessário para Nota Fiscal)</label>
+              <input
+                type="text"
+                placeholder="000.000.000-00"
+                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                value={cpf}
+                onChange={(e) => setCpf(formatCPF(e.target.value))}
+                maxLength={14}
+              />
+            </div>
 
             <button
               onClick={() => handleSubscribe('plus', 'annual')}

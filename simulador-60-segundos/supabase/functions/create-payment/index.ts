@@ -66,9 +66,9 @@ Deno.serve(async (req) => {
             throw new Error("Missing Asaas API Key Configuration");
         }
 
-        // if (!cpf) {
-        //     throw new Error("CPF é obrigatório para processar o pagamento.");
-        // } - DISABLED BY REQUEST: CPF will be collected by Asaas or optional
+        if (!cpf) {
+            throw new Error("CPF é obrigatório para processar o pagamento.");
+        }
 
         const ASAAS_API_URL = Deno.env.get('ASAAS_API_URL') || 'https://sandbox.asaas.com/api/v3';
 
@@ -116,33 +116,56 @@ Deno.serve(async (req) => {
             customerId = newCustomer.id;
         }
 
-        // --- PAYMENT CREATION ---
+        // --- SUBSCRIPTION CREATION (RECURRING) ---
         const value = billingCycle === 'annual' ? 99.00 : 9.90;
-        const description = billingCycle === 'annual' ? 'Simulador 60s (Anual)' : 'Simulador 60s (Mensal)';
+        const description = billingCycle === 'annual' ? 'Simulador 60s (Assinatura Anual)' : 'Simulador 60s (Mensal)';
+        const cycle = billingCycle === 'annual' ? 'YEARLY' : 'MONTHLY';
 
-        const paymentResp = await fetch(`${ASAAS_API_URL}/payments`, {
+        // Create Subscription
+        // Note: Asaas /subscriptions endpoint
+        const subscriptionResp = await fetch(`${ASAAS_API_URL}/subscriptions`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'access_token': asaasKey },
             body: JSON.stringify({
                 customer: customerId,
-                billingType: 'UNDEFINED',
+                billingType: 'UNDEFINED', // Allow user to choose (or specify if needed)
                 value,
-                dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                nextDueDate: new Date(Date.now() + 10 * 60 * 1000).toISOString().split('T')[0], // Today (or close to it) to charge immediately
+                cycle,
                 description,
-                externalReference: user.id,
-                postalService: false
+                externalReference: user.id
             })
         });
 
-        const paymentData = await paymentResp.json();
+        const subscriptionData = await subscriptionResp.json();
 
-        if (paymentData.errors) {
-            const msg = paymentData.errors.map((e: any) => e.description).join('; ');
-            throw new Error(`Payment Rejected: ${msg}`);
+        if (subscriptionData.errors) {
+            const msg = subscriptionData.errors.map((e: any) => e.description).join('; ');
+            throw new Error(`Subscription Rejected: ${msg}`);
+        }
+
+        // Subscription created successfully. Now we need the URL for the user to pay.
+        // For subscriptions, Asaas might not return 'invoiceUrl' directly on the subscription object in all API versions.
+        // We usually need to fetch the generated payments for this subscription.
+
+        console.log(`Subscription created: ${subscriptionData.id}. Fetching payment...`);
+
+        // Fetch the payment generated for this subscription
+        const paymentsResp = await fetch(`${ASAAS_API_URL}/subscriptions/${subscriptionData.id}/payments`, {
+            headers: { 'access_token': asaasKey }
+        });
+
+        const paymentsData = await paymentsResp.json();
+        const firstPayment = paymentsData.data?.[0];
+
+        if (!firstPayment) {
+            // Fallback: Use subscription billUrl if available (usually for credit card only management)
+            // But prefer the payment invoiceUrl
+            throw new Error("Subscription created but no payment/invoice generated yet.");
         }
 
         return new Response(
-            JSON.stringify({ paymentUrl: paymentData.invoiceUrl, id: paymentData.id }),
+            JSON.stringify({ paymentUrl: firstPayment.invoiceUrl, id: subscriptionData.id }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         );
 

@@ -34,12 +34,32 @@ Deno.serve(async (req) => {
         }
 
         const payment = event.payment;
-        const userId = payment.externalReference;
+        let userId = payment.externalReference;
 
         console.log("Payment ID:", payment.id, "User ID (Ref):", userId);
 
+        // Fallback: If payment lacks externalReference but has subscription, fetch subscription
+        if (!userId && payment.subscription) {
+            console.log(`Missing externalReference on payment. Fetching subscription ${payment.subscription}...`);
+            const asaasKey = Deno.env.get('ASAAS_API_KEY');
+            const asaasUrl = Deno.env.get('ASAAS_API_URL') || 'https://sandbox.asaas.com/api/v3';
+
+            if (asaasKey) {
+                const subResp = await fetch(`${asaasUrl}/subscriptions/${payment.subscription}`, {
+                    headers: { 'access_token': asaasKey }
+                });
+                if (subResp.ok) {
+                    const subData = await subResp.json();
+                    userId = subData.externalReference;
+                    console.log("Recovered User ID from Subscription:", userId);
+                } else {
+                    console.error("Failed to fetch subscription details:", await subResp.text());
+                }
+            }
+        }
+
         if (!userId) {
-            console.error('Webhook received but no externalReference (userId) found in payment object.');
+            console.error('Webhook received but no externalReference (userId) found in payment or subscription.');
             // We return 200 to Asaas so they stop retrying, but we log the error.
             return new Response(JSON.stringify({ received: true, error: "Missing externalReference" }), { status: 200 });
         }
