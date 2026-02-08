@@ -63,13 +63,28 @@ export function useUserProfile(user: User | null) {
                         }
                     }
 
+                    // Smart name resolution
+                    const metaName = user.user_metadata?.full_name || user.user_metadata?.name;
+                    const profileName = rawData.name;
+
+                    const resolvedName = profileName || metaName || user.email || 'Usuário';
+
+                    // Auto-Repair: If DB name is missing but we have it in metadata, update DB
+                    if (!profileName && metaName) {
+                        console.log("Auto-Repairing Profile Name...");
+                        supabase.from('profiles').update({ name: metaName }).eq('id', user.id).then(({ error }) => {
+                            if (error) console.error("Auto-Repair Failed:", error);
+                            else console.log("Auto-Repair Success!");
+                        });
+                    }
+
                     const currentProfile: UserProfile = {
                         ...data,
                         plan: activePlan,
                         usageCount: rawData.usage_count ?? 0,
                         lastResetDate: rawData.last_reset_date,
                         subscriptionEndDate: rawData.subscription_end_date,
-                        name: rawData.name || user.email || 'Usuário',
+                        name: resolvedName,
                         email: rawData.email || ''
                     } as UserProfile;
 
@@ -93,7 +108,8 @@ export function useUserProfile(user: User | null) {
                             plan: activePlan, // Maintain the calculated plan expiration
                             usageCount: (resetData as any).usage_count ?? 0,
                             lastResetDate: (resetData as any).last_reset_date,
-                            subscriptionEndDate: (resetData as any).subscription_end_date
+                            subscriptionEndDate: (resetData as any).subscription_end_date,
+                            name: resolvedName // Keep resolved name
                         } as UserProfile);
 
                     } else {
