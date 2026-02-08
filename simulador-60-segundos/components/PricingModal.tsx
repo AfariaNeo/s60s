@@ -23,13 +23,19 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
 
+      console.log("Debug: Starting Subscription Check");
+      console.log("Debug: Session Active:", !!session);
+      console.log("Debug: Token Present:", !!token);
+      // Log the project URL to ensure we are hitting the right backend
+      console.log("Debug: VITE_SUPABASE_URL:", import.meta.env.VITE_SUPABASE_URL);
+
       if (!token) {
         alert("Sessão expirada. Faça login novamente.");
         return;
       }
 
+      // Revert to default behavior: supabase-js automatically attaches Auth header
       const { data, error } = await supabase.functions.invoke('create-payment', {
-        headers: { Authorization: `Bearer ${token}` },
         body: { billingCycle: cycle }
       });
 
