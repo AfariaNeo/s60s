@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, User, Shield, CreditCard, RotateCcw } from 'lucide-react';
+import { X, User, Shield, CreditCard, RotateCcw, Crown, KeyRound, Calendar, MinusCircle } from 'lucide-react';
 import { UserProfile } from '../types';
 import { supabase } from '../lib/supabaseClient';
 
@@ -10,32 +10,64 @@ interface ProfileModalProps {
 }
 
 const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, profile }) => {
-  const [resetLoading, setResetLoading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [isResetting, setIsResetting] = useState(false); // Renamed from resetLoading to match snippet
+  const [message, setMessage] = useState<string | null>(null); // Kept for potential future use, though snippet uses alerts
+  const [isCancelling, setIsCancelling] = useState(false); // New state for cancellation
 
   if (!isOpen || !profile) return null;
 
   const handlePasswordReset = async () => {
-    setResetLoading(true);
-    setMessage(null);
+    if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
+      console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
+    }
+
+    setIsResetting(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(profile.email, {
-        redirectTo: window.location.origin + '/reset-password', // Ensure this route exists or just handles it
+        redirectTo: `${window.location.origin}/update-password`,
       });
-
       if (error) throw error;
-      setMessage("Email de redefinição enviado! Verifique sua caixa de entrada.");
-    } catch (err: any) {
-      setMessage(`Erro: ${err.message}`);
+      alert('Email de redefinição de senha enviado!');
+    } catch (error: any) { // Added type for error
+      console.error('Erro ao enviar email:', error);
+      alert('Erro ao enviar email de redefinição.');
     } finally {
-      setResetLoading(false);
+      setIsResetting(false);
     }
   };
 
+  const handleCancelSubscription = async () => {
+    if (!confirm("Tem certeza que deseja cancelar sua assinatura? Você perderá o acesso PRO ao final do ciclo atual.")) {
+      return;
+    }
+
+    setIsCancelling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('cancel-subscription');
+
+      if (error) throw error;
+
+      if (data?.success) {
+        alert("Assinatura cancelada com sucesso. Seu acesso continua ativo até o fim do período.");
+        onClose();
+      } else {
+        alert(data.message || "Não foi possível cancelar a assinatura.");
+      }
+    } catch (err) {
+      console.error("Erro ao cancelar:", err);
+      alert("Erro ao processar o cancelamento. Tente novamente mais tarde.");
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  // The formatDate function from original code is not used in the new JSX, so it can be removed or kept if needed elsewhere.
+  // Keeping it for now as it's not explicitly removed by the instruction.
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return 'N/A';
     return new Date(dateStr).toLocaleDateString('pt-BR');
   };
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -44,91 +76,95 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, profile })
         onClick={onClose}
       />
 
-      <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full animate-in fade-in zoom-in duration-200 overflow-hidden">
-        <div className="bg-emerald-600 px-6 py-4 flex justify-between items-center">
-          <h2 className="text-white font-bold text-lg flex items-center gap-2">
-            <User className="w-5 h-5" /> Minha Conta
-          </h2>
-          <button onClick={onClose} className="text-emerald-100 hover:text-white transition-colors">
-            <X className="w-6 h-6" />
-          </button>
+      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div className="bg-emerald-600 px-6 py-8 text-center">
+          <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-emerald-400/30 text-3xl font-bold text-emerald-600 shadow-lg">
+            {profile.name.charAt(0).toUpperCase()}
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-1">{profile.name}</h2>
+          <p className="text-emerald-100 text-sm">{profile.email}</p>
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Info Básica */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-xl">
-                {profile.name?.charAt(0).toUpperCase() || 'U'}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+              <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1">Plano Atual</p>
+              <div className="flex items-center gap-2">
+                {profile.plan === 'plus' ? (
+                  <>
+                    <Crown className="w-5 h-5 text-yellow-500" />
+                    <span className="font-bold text-gray-900">PRO</span>
+                  </>
+                ) : (
+                  <span className="font-bold text-gray-900">Gratuito</span>
+                )}
+              </div>
+            </div>
+
+            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+              <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1">Status</p>
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${profile.plan === 'plus' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
+                }`}>
+                {profile.plan === 'plus' ? 'Ativo' : 'Limitado'}
+              </span>
+            </div>
+          </div>
+
+          {profile.plan === 'plus' && profile.subscriptionEndDate && (
+            <div className="flex items-center gap-3 p-4 bg-emerald-50 rounded-xl border border-emerald-100">
+              <Calendar className="w-5 h-5 text-emerald-600" />
+              <div>
+                <p className="text-xs text-emerald-600 font-medium">Renovação</p>
+                <p className="text-sm font-bold text-emerald-900">
+                  {new Date(profile.subscriptionEndDate).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {profile.plan === 'free' && (
+            <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-xl border border-blue-100">
+              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                <span className="text-blue-600 font-bold text-sm">{profile.usageCount}</span>
               </div>
               <div>
-                <h3 className="font-bold text-gray-900">{profile.name}</h3>
-                <p className="text-sm text-gray-500">{profile.email}</p>
+                <p className="text-xs text-blue-600 font-medium">Uso Mensal</p>
+                <p className="text-sm text-blue-900">
+                  Simulações restantes: <span className="font-bold">{5 - profile.usageCount}</span>
+                </p>
               </div>
             </div>
-          </div>
+          )}
 
-          <hr className="border-gray-100" />
-
-          {/* Plano */}
-          <div>
-            <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-              <CreditCard className="w-4 h-4" /> Assinatura
-            </h4>
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-gray-600">Plano Atual</span>
-                <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${profile.plan === 'plus' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-200 text-gray-700'
-                  }`}>
-                  {profile.plan === 'plus' ? 'PRO' : 'GRÁTIS'}
-                </span>
-              </div>
-              {profile.plan === 'plus' && (
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-600">Vigência até</span>
-                  <span className="font-medium text-emerald-700">
-                    {formatDate(profile.subscriptionEndDate)}
-                  </span>
-                </div>
-              )}
-              {profile.plan === 'free' && (
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-600">Limite Mensal</span>
-                  <span className="font-medium text-gray-900">
-                    {profile.usageCount} / 5 Tokens
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <hr className="border-gray-100" />
-
-          {/* Segurança */}
-          <div>
-            <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-              <Shield className="w-4 h-4" /> Segurança
-            </h4>
-
-            {message && (
-              <div className={`p-3 rounded-lg text-sm mb-3 ${message.includes('Erro') ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
-                {message}
-              </div>
-            )}
-
+          <div className="pt-4 border-t border-gray-100 flex flex-col gap-3">
             <button
               onClick={handlePasswordReset}
-              disabled={resetLoading}
-              className="w-full flex items-center justify-center gap-2 py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+              disabled={isResetting}
+              className="w-full py-2.5 px-4 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              <RotateCcw className="w-4 h-4" />
-              {resetLoading ? 'Enviando...' : 'Redefinir Senha'}
+              <KeyRound className="w-4 h-4" />
+              {isResetting ? 'Enviando...' : 'Redefinir Senha'}
             </button>
-            <p className="text-xs text-gray-400 mt-2 text-center">
-              Você receberá um email para criar uma nova senha.
-            </p>
+
+            {profile.plan === 'plus' && (
+              <button
+                onClick={handleCancelSubscription}
+                disabled={isCancelling}
+                className="w-full py-2.5 px-4 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                <MinusCircle className="w-4 h-4" />
+                {isCancelling ? 'Processando...' : 'Cancelar Assinatura'}
+              </button>
+            )}
           </div>
         </div>
+
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 text-white/80 hover:text-white transition-colors bg-black/10 hover:bg-black/20 rounded-full"
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
     </div>
   );
