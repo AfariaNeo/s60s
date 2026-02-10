@@ -89,7 +89,7 @@ export default function LegalPage() {
 
                     </div>
                     <div className="px-4 py-4 sm:px-6 bg-gray-50 border-t border-gray-200 text-center text-sm text-gray-500">
-                        Dúvidas? Entre em contato com nosso suporte.
+                        Dúvidas? Entre em contato com nosso suporte: <a href="mailto:suporte@simulador60segundos.com.br" className="text-emerald-600 font-bold hover:underline">suporte@simulador60segundos.com.br</a>
                     </div>
                 </div>
             </div>

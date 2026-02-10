@@ -265,8 +265,8 @@ export default function LandingPage() {
                     <div>
                         <h4 className="text-white font-bold mb-4">Legal</h4>
                         <ul className="space-y-2 text-sm">
-                            <li><a href="#" className="hover:text-emerald-400">Termos de Uso</a></li>
-                            <li><a href="#" className="hover:text-emerald-400">Privacidade</a></li>
+                            <li><button onClick={() => navigate('/legal')} className="hover:text-emerald-400">Termos de Uso</button></li>
+                            <li><button onClick={() => navigate('/legal')} className="hover:text-emerald-400">Privacidade</button></li>
                         </ul>
                     </div>
                 </div>
