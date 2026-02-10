@@ -33,7 +33,15 @@ export default function LandingPage() {
                             <button onClick={() => scrollToSection('features')} className="text-gray-600 hover:text-emerald-600 font-medium">Vantagens</button>
                             <button onClick={() => scrollToSection('pricing')} className="text-gray-600 hover:text-emerald-600 font-medium">Planos</button>
                             <button
-                                onClick={() => navigate('/login')}
+                                onClick={() => {
+                                    // @ts-ignore
+                                    if (typeof window.gtag_report_conversion === 'function') {
+                                        // @ts-ignore
+                                        window.gtag_report_conversion('/login');
+                                    } else {
+                                        navigate('/login');
+                                    }
+                                }}
                                 className="bg-emerald-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-200"
                             >
                                 Entrar / Cadastrar
@@ -78,7 +86,15 @@ export default function LandingPage() {
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                         <button
-                            onClick={() => navigate('/login')}
+                            onClick={() => {
+                                // @ts-ignore
+                                if (typeof window.gtag_report_conversion === 'function') {
+                                    // @ts-ignore
+                                    window.gtag_report_conversion('/login');
+                                } else {
+                                    navigate('/login');
+                                }
+                            }}
                             className="w-full sm:w-auto px-8 py-4 bg-emerald-600 text-white rounded-xl font-bold text-lg hover:bg-emerald-700 transition-all transform hover:scale-105 shadow-xl shadow-emerald-200 flex items-center justify-center gap-2"
                         >
                             Começar Agora (Grátis)
@@ -233,7 +249,15 @@ export default function LandingPage() {
                         Junte-se a corretores que estão modernizando o mercado imobiliário.
                     </p>
                     <button
-                        onClick={() => navigate('/login')}
+                        onClick={() => {
+                            // @ts-ignore
+                            if (typeof window.gtag_report_conversion === 'function') {
+                                // @ts-ignore
+                                window.gtag_report_conversion('/login');
+                            } else {
+                                navigate('/login');
+                            }
+                        }}
                         className="px-10 py-5 bg-emerald-600 text-white rounded-xl font-bold text-xl hover:bg-emerald-700 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
                     >
                         Criar Conta Gratuita Agora
