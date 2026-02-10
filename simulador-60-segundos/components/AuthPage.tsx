@@ -23,6 +23,19 @@ export default function AuthPage() {
             if (isLogin) {
                 await signIn(email, password);
             } else {
+                // --- EMAIL VALIDATION ---
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    throw new Error("Por favor, insira um e-mail válido.");
+                }
+
+                const disposableDomains = ['tempmail.com', '10minutemail.com', 'guerrillamail.com', 'mailinator.com', 'yopmail.com'];
+                const domain = email.split('@')[1];
+                if (disposableDomains.includes(domain)) {
+                    throw new Error("E-mails temporários não são permitidos. Use um e-mail real.");
+                }
+                // ------------------------
+
                 await signUp(email, password, name);
                 setMessage("Conta criada! Verifique seu email para confirmar.");
                 if (isLogin) setIsLogin(true); // Switch to login view or just show message
@@ -44,7 +57,7 @@ export default function AuthPage() {
                     {isLogin ? 'Entre na sua conta' : 'Crie sua conta grátis'}
                 </h2>
                 <p className="mt-2 text-center text-sm text-gray-600">
-                    Or <button onClick={() => setIsLogin(!isLogin)} className="font-medium text-emerald-600 hover:text-emerald-500">
+                    Ou <button onClick={() => setIsLogin(!isLogin)} className="font-medium text-emerald-600 hover:text-emerald-500">
                         {isLogin ? 'comece agora com um plano grátis' : 'já tem uma conta? Entre aqui'}
                     </button>
                 </p>
