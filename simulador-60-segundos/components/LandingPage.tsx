@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calculator, Clock, TrendingUp, ShieldCheck, CheckCircle2, ArrowRight, Menu, X } from 'lucide-react';
+import { Calculator, Clock, TrendingUp, ShieldCheck, CheckCircle2, ArrowRight, Menu, X, Mail } from 'lucide-react';
 
 export default function LandingPage() {
     const navigate = useNavigate();
@@ -277,6 +277,12 @@ export default function LandingPage() {
                         <p className="max-w-xs text-sm">
                             Tecnologia para o mercado imobiliário. Feito para corretores que valorizam o tempo e a precisão.
                         </p>
+                        <div className="flex items-center gap-2 mt-4 text-sm text-gray-400">
+                            <Mail className="w-4 h-4 text-emerald-500" />
+                            <a href="mailto:suporte@simulador60segundos.com.br" className="hover:text-white transition-colors">
+                                suporte@simulador60segundos.com.br
+                            </a>
+                        </div>
                     </div>
                     <div>
                         <h4 className="text-white font-bold mb-4">Produto</h4>
@@ -335,7 +341,7 @@ function FeatureItem({ title, desc }: { title: string, desc: string }) {
 function PricingCheck({ text, darkTheme }: { text: string, darkTheme?: boolean }) {
     return (
         <li className="flex items-center gap-3">
-            <CheckCircle2 className={`w-5 h-5 ${darkTheme ? 'text-emerald-400' : 'text-emerald-600'}`} />
+            <CheckCircle2 className={`w - 5 h - 5 ${darkTheme ? 'text-emerald-400' : 'text-emerald-600'} `} />
             <span className={darkTheme ? 'text-emerald-50' : 'text-gray-600'}>{text}</span>
         </li>
     )
