@@ -161,7 +161,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, profile })
           <div className="pt-4 border-t border-gray-100 text-center">
             <p className="text-xs text-gray-500 flex items-center justify-center gap-1">
               Precisa de ajuda?
-              <a href="mailto:suporte@simulador60segundos.com.br" className="text-emerald-600 hover:text-emerald-700 font-medium hover:underline flex items-center gap-1">
+              <a href="mailto:contato@simulador60segundos.com.br" className="text-emerald-600 hover:text-emerald-700 font-medium hover:underline flex items-center gap-1">
                 <HelpCircle className="w-3 h-3" />
                 Fale com o Suporte
               </a>

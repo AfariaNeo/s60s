@@ -279,8 +279,8 @@ export default function LandingPage() {
                         </p>
                         <div className="flex items-center gap-2 mt-4 text-sm text-gray-400">
                             <Mail className="w-4 h-4 text-emerald-500" />
-                            <a href="mailto:suporte@simulador60segundos.com.br" className="hover:text-white transition-colors">
-                                suporte@simulador60segundos.com.br
+                            <a href="mailto:contato@simulador60segundos.com.br" className="hover:text-white transition-colors">
+                                contato@simulador60segundos.com.br
                             </a>
                         </div>
                     </div>
