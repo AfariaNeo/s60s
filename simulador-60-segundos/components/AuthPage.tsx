@@ -37,7 +37,7 @@ export default function AuthPage() {
                 // ------------------------
 
                 await signUp(email, password, name);
-                setMessage("Conta criada! Verifique seu email para confirmar.");
+                setMessage("Conta criada com sucesso! Verifique seu e-mail (inclusive na caixa de Spam/Lixo Eletrônico) para confirmar seu cadastro.");
                 if (isLogin) setIsLogin(true); // Switch to login view or just show message
             }
         } catch (err: any) {
