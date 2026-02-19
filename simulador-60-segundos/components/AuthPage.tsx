@@ -38,6 +38,14 @@ export default function AuthPage() {
                 // ------------------------
 
                 await signUp(email, password, name);
+
+                // Track Google Ads Conversion
+                if (typeof (window as any).gtag === 'function') {
+                    (window as any).gtag('event', 'conversion', {
+                        'send_to': 'AW-17945048072/qX9UCNCEgPsbEIjo7uxC'
+                    });
+                }
+
                 setView('success');
             }
         } catch (err: any) {
