@@ -5,7 +5,7 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
     // Handle CORS (if Asaas ever sends OPTIONS, though usually they send POST directly)
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })

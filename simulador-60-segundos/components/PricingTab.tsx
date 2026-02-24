@@ -47,10 +47,17 @@ export default function PricingTab({
             setParams(prev => ({ ...prev, [name]: value as any }));
             return;
         }
+
+        // Handle numeric inputs
+        if (value === '') {
+            setParams(prev => ({ ...prev, [name]: 0 }));
+            return;
+        }
+
         const numValue = parseFloat(value);
         setParams(prev => ({
             ...prev,
-            [name]: isNaN(numValue) && value !== '' ? value : numValue
+            [name]: isNaN(numValue) ? 0 : numValue
         }));
     };
 
@@ -58,7 +65,7 @@ export default function PricingTab({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
 
             {/* Inputs */}
-            <div className="lg:col-span-4 space-y-6">
+            <div className="lg:col-span-5 space-y-6">
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                     <h2 className="text-lg font-semibold text-gray-800 mb-5 flex items-center gap-2">
                         <Tag className="w-5 h-5 text-emerald-600" />
@@ -96,31 +103,32 @@ export default function PricingTab({
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
+                        <div className="grid grid-cols-2 gap-4 items-start">
+                            <div className="flex flex-col h-full">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Comissão (%)</label>
-                                <div className="relative">
+                                <div className="relative mt-auto">
                                     <Percent className="absolute right-3 top-3 w-4 h-4 text-gray-400" />
                                     <input
                                         type="number"
                                         name="commissionPercent"
-                                        value={params.commissionPercent || ''}
+                                        value={params.commissionPercent ?? ''}
                                         onChange={handleInputChange}
                                         className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-emerald-500"
+                                        placeholder="0"
                                     />
                                 </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Margem Negoc. (%)</label>
-                                <div className="relative">
+                            <div className="flex flex-col h-full">
+                                <label className="block text-sm font-medium text-gray-700 mb-1 leading-tight">Margem Negoc. (%)</label>
+                                <div className="relative mt-auto">
                                     <Percent className="absolute right-3 top-3 w-4 h-4 text-gray-400" />
                                     <input
                                         type="number"
                                         name="negotiationMarginPercent"
-                                        value={params.negotiationMarginPercent || ''}
+                                        value={params.negotiationMarginPercent ?? ''}
                                         onChange={handleInputChange}
                                         className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-emerald-500"
-                                        placeholder="Ex: 5%"
+                                        placeholder="0"
                                     />
                                 </div>
                             </div>
@@ -141,7 +149,7 @@ export default function PricingTab({
             </div>
 
             {/* Resultados */}
-            <div className="lg:col-span-8">
+            <div className="lg:col-span-7">
                 {results ? (
                     <div className="space-y-6">
                         {/* Main Result */}

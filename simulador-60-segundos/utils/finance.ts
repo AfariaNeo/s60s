@@ -18,7 +18,7 @@ export const calculateSimulation = (params: SimulationParams): { sac: Amortizati
 
   const downPayment = propertyValue * (downPaymentPercent / 100);
   const loanAmount = propertyValue - downPayment;
-  
+
   // Calculate monthly interest rate from annual nominal rate
   const monthlyInterestRate = Math.pow(1 + (annualInterestRate / 100), 1 / 12) - 1;
 
@@ -38,7 +38,7 @@ const calculateSAC = (principal: number, monthlyRate: number, months: number): A
   for (let i = 1; i <= months; i++) {
     const interest = currentBalance * monthlyRate;
     const installment = constantAmortization + interest;
-    
+
     totalInterest += interest;
     totalAmountPaid += installment;
     currentBalance -= constantAmortization;
@@ -72,16 +72,16 @@ const calculateSAC = (principal: number, monthlyRate: number, months: number): A
 const calculatePRICE = (principal: number, monthlyRate: number, months: number): AmortizationResult => {
   // Guard clause to prevent division by zero in PMT formula if rate is 0 (unlikely but possible)
   if (monthlyRate === 0) {
-      // Linear simple division if no interest
-      const val = principal / months;
-      return {
-          initialInstallment: val,
-          finalInstallment: val,
-          totalInterest: 0,
-          totalAmountPaid: principal,
-          requiredIncome: val / 0.30,
-          schedule: [] 
-      };
+    // Linear simple division if no interest
+    const val = principal / months;
+    return {
+      initialInstallment: val,
+      finalInstallment: val,
+      totalInterest: 0,
+      totalAmountPaid: principal,
+      requiredIncome: val / 0.30,
+      schedule: []
+    };
   }
 
   // PMT Formula: P * [ i(1+i)^n ] / [ (1+i)^n – 1 ]
@@ -96,7 +96,7 @@ const calculatePRICE = (principal: number, monthlyRate: number, months: number):
   for (let i = 1; i <= months; i++) {
     const interest = currentBalance * monthlyRate;
     const amortization = fixedInstallment - interest;
-    
+
     currentBalance -= amortization;
     totalInterest += interest;
     totalAmountPaid += fixedInstallment;
@@ -131,7 +131,7 @@ export const calculateCommission = (params: CommissionParams): CommissionResult 
 
   // Valor total pago pelo vendedor (Ex: 6% de 500k = 30k)
   const totalCommissionValue = propertyValue * (totalCommissionPercent / 100);
-  
+
   let agentCommissionValue = 0;
 
   if (calculationMode === 'percentage_of_total') {
@@ -157,8 +157,8 @@ export const calculatePricing = (params: PricingParams): PricingResult => {
   const { inputValue, commissionPercent, negotiationMarginPercent, mode } = params;
 
   // Normalizar percentuais (ex: 6 vira 0.06)
-  const commRate = commissionPercent / 100;
-  const marginRate = negotiationMarginPercent / 100;
+  const commRate = (commissionPercent || 0) / 100;
+  const marginRate = (negotiationMarginPercent || 0) / 100;
 
   let listingPrice = 0;
   let salePriceEstimated = 0;
@@ -173,10 +173,10 @@ export const calculatePricing = (params: PricingParams): PricingResult => {
     // Net = SalePrice * (1 - Comm)
     // Net = ListingPrice * (1 - Margin) * (1 - Comm)
     // ListingPrice = Net / ((1 - Margin) * (1 - Comm))
-    
+
     netValue = inputValue;
     const denominator = (1 - marginRate) * (1 - commRate);
-    
+
     if (denominator > 0) {
       listingPrice = netValue / denominator;
     } else {
@@ -190,7 +190,7 @@ export const calculatePricing = (params: PricingParams): PricingResult => {
   } else {
     // Input é o valor do ANÚNCIO (Listing)
     listingPrice = inputValue;
-    
+
     marginValue = listingPrice * marginRate;
     salePriceEstimated = listingPrice - marginValue;
     commissionValue = salePriceEstimated * commRate;
@@ -208,7 +208,7 @@ export const calculatePricing = (params: PricingParams): PricingResult => {
 
 export const calculatePurchaseCosts = (params: PurchaseCostParams): PurchaseCostResult => {
   const { propertyValue, downPaymentPercent, itbiPercent, registryPercent } = params;
-  
+
   // Garantir limites
   const safeItbi = Math.min(3, Math.max(0, itbiPercent));
   const safeRegistry = Math.min(2, Math.max(0, registryPercent));
@@ -216,7 +216,7 @@ export const calculatePurchaseCosts = (params: PurchaseCostParams): PurchaseCost
   const downPaymentValue = propertyValue * (downPaymentPercent / 100);
   const itbiValue = propertyValue * (safeItbi / 100);
   const registryValue = propertyValue * (safeRegistry / 100);
-  
+
   return {
     downPaymentValue,
     itbiValue,
