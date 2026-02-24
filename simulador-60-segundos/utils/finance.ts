@@ -161,48 +161,30 @@ export const calculatePricing = (params: PricingParams): PricingResult => {
   const marginRate = (negotiationMarginPercent || 0) / 100;
 
   let listingPrice = 0;
-  let salePriceEstimated = 0;
-  let commissionValue = 0;
-  let marginValue = 0;
-  let netValue = 0;
 
   if (mode === 'calculate_listing_price') {
-    // Input é o valor LÍQUIDO desejado (Net)
-    // Fórmula Reversa:
-    // SalePrice = ListingPrice * (1 - Margin)
-    // Net = SalePrice * (1 - Comm)
-    // Net = ListingPrice * (1 - Margin) * (1 - Comm)
-    // ListingPrice = Net / ((1 - Margin) * (1 - Comm))
-
-    netValue = inputValue;
-    const denominator = (1 - marginRate) * (1 - commRate);
-
-    if (denominator > 0) {
-      listingPrice = netValue / denominator;
-    } else {
-      listingPrice = 0; // Evitar divisão por zero ou negativa absurda
-    }
-
-    marginValue = listingPrice * marginRate;
-    salePriceEstimated = listingPrice - marginValue;
-    commissionValue = salePriceEstimated * commRate;
-
+    // Abordagem Aditiva: Líquido = Anúncio * (1 - Margem% - Comissão%)
+    // Logo: Anúncio = Líquido / (1 - Margem% - Comissão%)
+    const denominator = 1 - marginRate - commRate;
+    listingPrice = denominator > 0 ? inputValue / denominator : 0;
   } else {
     // Input é o valor do ANÚNCIO (Listing)
     listingPrice = inputValue;
-
-    marginValue = listingPrice * marginRate;
-    salePriceEstimated = listingPrice - marginValue;
-    commissionValue = salePriceEstimated * commRate;
-    netValue = salePriceEstimated - commissionValue;
   }
 
+  // Ambos incidem sobre o preço de anúncio para transparência e verificação simples
+  const marginValue = listingPrice * marginRate;
+  const commissionValue = listingPrice * commRate;
+  const salePriceEstimated = listingPrice - marginValue;
+  const netValue = listingPrice - marginValue - commissionValue;
+
+  // Retirar casas decimais (arredondamento)
   return {
-    listingPrice,
-    salePriceEstimated,
-    commissionValue,
-    marginValue,
-    netValue
+    listingPrice: Math.round(listingPrice),
+    salePriceEstimated: Math.round(salePriceEstimated),
+    commissionValue: Math.round(commissionValue),
+    marginValue: Math.round(marginValue),
+    netValue: Math.round(netValue)
   };
 };
 
@@ -225,11 +207,11 @@ export const calculatePurchaseCosts = (params: PurchaseCostParams): PurchaseCost
   };
 };
 
-export const formatCurrency = (value: number) => {
+export const formatCurrency = (value: number, decimals: number = 2) => {
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
   }).format(value);
 };

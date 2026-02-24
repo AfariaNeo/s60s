@@ -23,7 +23,7 @@ export default function PricingTab({
 
     useEffect(() => {
         if (params.inputValue) {
-            setInputValueDisplay(new Intl.NumberFormat('pt-BR').format(params.inputValue));
+            setInputValueDisplay(new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 0 }).format(params.inputValue));
         } else {
             setInputValueDisplay('');
         }
@@ -33,7 +33,7 @@ export default function PricingTab({
         const rawValue = e.target.value.replace(/\D/g, '');
         const numValue = Number(rawValue);
 
-        setInputValueDisplay(new Intl.NumberFormat('pt-BR').format(numValue));
+        setInputValueDisplay(new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 0 }).format(numValue));
 
         setParams(prev => ({
             ...prev,
@@ -162,12 +162,12 @@ export default function PricingTab({
                             </h3>
 
                             <p className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
-                                {formatCurrency(params.mode === 'calculate_listing_price' ? results.listingPrice : results.netValue)}
+                                {formatCurrency(params.mode === 'calculate_listing_price' ? results.listingPrice : results.netValue, 0)}
                             </p>
 
                             {params.mode === 'calculate_listing_price' && (
                                 <div className="inline-block bg-emerald-50 text-emerald-700 px-4 py-2 rounded-full text-sm font-medium border border-emerald-100">
-                                    Anuncie por este valor para garantir seus {formatCurrency(params.inputValue)} limpos.
+                                    Anuncie por este valor para garantir seus {formatCurrency(params.inputValue, 0)} limpos.
                                 </div>
                             )}
                         </div>
@@ -185,7 +185,7 @@ export default function PricingTab({
                                     <span className="flex items-center gap-2 text-gray-700 font-medium">
                                         <Tag className="w-4 h-4 text-gray-400" /> Preço de Anúncio
                                     </span>
-                                    <span className="font-bold text-gray-900 text-lg">{formatCurrency(results.listingPrice)}</span>
+                                    <span className="font-bold text-gray-900 text-lg">{formatCurrency(results.listingPrice, 0)}</span>
                                 </div>
 
                                 <div className="flex justify-center -my-2 relative z-10">
@@ -197,7 +197,7 @@ export default function PricingTab({
                                     <div className="p-4 border border-red-100 bg-red-50/50 rounded-lg flex justify-between items-center hover:bg-red-50 transition-colors">
                                         <div>
                                             <p className="text-xs text-red-600 font-bold uppercase mb-1">Comissão ({params.commissionPercent}%)</p>
-                                            <p className="font-bold text-red-700 text-lg">-{formatCurrency(results.commissionValue)}</p>
+                                            <p className="font-bold text-red-700 text-lg">-{formatCurrency(results.commissionValue, 0)}</p>
                                         </div>
                                         <Minus className="w-5 h-5 text-red-300" />
                                     </div>
@@ -205,7 +205,7 @@ export default function PricingTab({
                                     <div className="p-4 border border-yellow-100 bg-yellow-50/50 rounded-lg flex justify-between items-center hover:bg-yellow-50 transition-colors">
                                         <div>
                                             <p className="text-xs text-yellow-700 font-bold uppercase mb-1">Margem Negoc. ({params.negotiationMarginPercent}%)</p>
-                                            <p className="font-bold text-yellow-800 text-lg">-{formatCurrency(results.marginValue)}</p>
+                                            <p className="font-bold text-yellow-800 text-lg">-{formatCurrency(results.marginValue, 0)}</p>
                                         </div>
                                         <Minus className="w-5 h-5 text-yellow-400" />
                                     </div>
@@ -220,7 +220,7 @@ export default function PricingTab({
                                     <span className="flex items-center gap-2 text-emerald-800 font-bold">
                                         <Wallet className="w-5 h-5" /> Valor Líquido Final
                                     </span>
-                                    <span className="font-extrabold text-emerald-700 text-2xl">{formatCurrency(results.netValue)}</span>
+                                    <span className="font-extrabold text-emerald-700 text-2xl">{formatCurrency(results.netValue, 0)}</span>
                                 </div>
                             </div>
                         </div>
