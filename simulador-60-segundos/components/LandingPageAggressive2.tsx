@@ -20,8 +20,22 @@ export default function LandingPageAggressive2() {
     const navigate = useNavigate();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+    React.useEffect(() => {
+        document.title = "Simulador 60s | Acelere suas Vendas Imobiliárias";
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) {
+            metaDesc.setAttribute("content", "A ferramenta mais rápida do mercado para corretores. Simule financiamentos SAC e PRICE em segundos e feche mais negócios.");
+        }
+    }, [navigate]);
+
     const handleAction = () => {
-        navigate('/login');
+        // @ts-ignore
+        if (typeof window.gtag_report_conversion === 'function') {
+            // @ts-ignore
+            window.gtag_report_conversion('/login');
+        } else {
+            navigate('/login');
+        }
     };
 
     return (
