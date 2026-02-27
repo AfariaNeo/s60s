@@ -64,7 +64,7 @@ export default function LandingPageAggressive2() {
                         </h1>
 
                         <p className="max-w-xl text-lg md:text-xl mb-12 leading-relaxed opacity-95 font-medium">
-                            Nosso app é simples, intuitivo e gera simulações de financiamento, precifica e calcula o custo total na compra de um imóvel, de forma completa e automaticamente para você. Dar informações rápidas ao seu cliente não precisa ser difícil, acesse agora e comece em minutos!
+                            Nosso app é simples, intuitivo e preciso. A ferramenta mais rápida do mercado, disponível na palma da sua mão, onde você estiver.
                         </p>
 
                         <div className="flex flex-col sm:flex-row items-center gap-6 justify-center md:justify-start">
@@ -108,7 +108,7 @@ export default function LandingPageAggressive2() {
                         <div>
                             <h2 className="text-3xl md:text-5xl font-black text-white mb-8 leading-tight uppercase">
                                 Você é treinado para vender. <br />
-                                <span className="text-black/30">Não para errar conta.</span>
+                                <span className="text-black/60">Não para errar conta.</span>
                             </h2>
                             <p className="text-white/80 text-lg mb-10 font-medium leading-relaxed">
                                 Quando o cliente pergunta: "Qual o valor aproximado da parcela do financiamento?". Você é o especialista. Retire todas as respostas do bolso em segundos e feche o negócio na hora da visita.
@@ -132,6 +132,7 @@ export default function LandingPageAggressive2() {
                                     <div>
                                         <h4 className="font-bold text-white uppercase text-sm tracking-wide">O Jeito 60sec</h4>
                                         <p className="text-white/90 text-sm mt-1 font-bold">SAC, PRICE, ITBI e Comissão na palma da mão. Envie por PDF profissional e venda no ato.</p>
+
                                     </div>
                                 </div>
                             </div>
@@ -154,7 +155,17 @@ export default function LandingPageAggressive2() {
                                     ))}
                                 </div>
                             </div>
+
                         </div>
+                    </div>
+
+                    <div className="flex justify-center mt-12">
+                        <button
+                            onClick={handleAction}
+                            className="px-12 py-6 bg-white text-[#00A3C4] rounded-2xl font-black text-2xl hover:bg-gray-100 transition-all shadow-2xl active:scale-95 uppercase"
+                        >
+                            quero usar agora!
+                        </button>
                     </div>
                 </div>
             </section>
@@ -162,6 +173,12 @@ export default function LandingPageAggressive2() {
             {/* --- FEATURES GRID --- */}
             <section className="py-24 border-t border-white/10">
                 <div className="max-w-7xl mx-auto px-6">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter">
+                            "Por que os Melhores Corretores Usam o 60s?"
+                        </h2>
+                        <div className="w-20 h-1.5 bg-white mx-auto mt-4 rounded-full"></div>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <FeatureCard
                             icon={<Smartphone className="text-white" />}
@@ -177,6 +194,36 @@ export default function LandingPageAggressive2() {
                             icon={<ShieldCheck className="text-white" />}
                             title="Segurança e Precisão"
                             desc="Fórmulas atualizadas conforme as regras bancárias para você não errar a parcela mínima do seu cliente."
+                        />
+                    </div>
+                </div>
+            </section>
+
+            {/* --- TESTIMONIALS SECTION --- */}
+            <section className="py-24 bg-black/5">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter">
+                            O que dizem os Líderes
+                        </h2>
+                        <div className="w-20 h-1.5 bg-white mx-auto mt-4 rounded-full"></div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <TestimonialCard
+                            name="Ricardo M."
+                            role="Corretor de Alto Padrão"
+                            content="O 60s mudou meu jogo. Fechei uma venda de R$ 2M porque mandei o PDF dos custos enquanto o cliente ainda olhava a vista da varanda. Insuperável!"
+                        />
+                        <TestimonialCard
+                            name="Carla S."
+                            role="Consultora Imobiliária"
+                            content="Antes eu perdia horas lutando com planilhas. Agora precifico e simulo parcelas no café com o cliente. Autoridade total e zero gagueira nas contas."
+                        />
+                        <TestimonialCard
+                            name="Felipe G."
+                            role="Gestor de Vendas"
+                            content="Minha equipe aumentou a taxa de conversão em 30%. A velocidade de resposta é o que separa o corretor que ganha comissão do que ganha desculpas."
                         />
                     </div>
                 </div>
@@ -228,6 +275,23 @@ function FeatureCard({ icon, title, desc }: { icon: React.ReactNode, title: stri
             </div>
             <h3 className="text-xl font-bold text-white mb-3 uppercase tracking-tight">{title}</h3>
             <p className="text-white/60 leading-relaxed text-sm font-medium">{desc}</p>
+        </div>
+    );
+}
+
+function TestimonialCard({ name, role, content }: { name: string, role: string, content: string }) {
+    return (
+        <div className="p-8 rounded-3xl bg-white/5 border border-white/10 flex flex-col justify-between">
+            <div className="mb-6">
+                {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} size={14} className="inline-block text-yellow-400 fill-yellow-400 mr-1" />
+                ))}
+            </div>
+            <p className="text-lg font-medium text-white/90 italic mb-8">"{content}"</p>
+            <div>
+                <p className="font-black text-white uppercase tracking-wider">{name}</p>
+                <p className="text-xs font-bold text-white/40 uppercase tracking-widest">{role}</p>
+            </div>
         </div>
     );
 }
