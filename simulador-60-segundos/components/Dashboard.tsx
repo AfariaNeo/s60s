@@ -8,6 +8,7 @@ import FinancingTab from './FinancingTab';
 import CommissionTab from './CommissionTab';
 import PricingTab from './PricingTab';
 import CostsTab from './CostsTab';
+import SpecialOfferModal from './SpecialOfferModal';
 import { useSimulation } from '../hooks/useSimulation';
 import { useUserProfile } from '../hooks/useUserProfile';
 
@@ -38,6 +39,7 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
     const [activeTab, setActiveTab] = useState<Tab>('financing');
     const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+    const [isSpecialOfferModalOpen, setIsSpecialOfferModalOpen] = useState(false);
 
     // --- OTHER TABS STATE (Legacy/Inline for now) ---
     const [commissionParams, setCommissionParams] = useState<CommissionParams>({ propertyValue: 0, totalCommissionPercent: 6, agentSharePercent: 50, calculationMode: 'percentage_of_total' });
@@ -65,12 +67,28 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
     };
 
     const handleConsumeToken = async () => {
-        if (isUsageLimitReached()) {
+        if (userPlan === 'plus') return true;
+
+        if (usageCount >= usageLimit) {
             setIsPricingModalOpen(true);
             return false;
         }
 
-        // Optimistic check passed, now try to increment in DB
+        // --- NEW MARKETING LOGIC ---
+        // Se o usuário está no 4º ou 5º crédito (count 3, 4)
+        // Mostramos a oferta imperdível, mas permitimos continuar se ele recusar.
+        if (usageCount >= 3 && usageCount < 5) {
+            // Só mostramos se ele ainda não viu nesta "sessão" ou se preferirmos ser agressivos, sempre que clicar.
+            // Para ser agressivo como solicitado:
+            setIsSpecialOfferModalOpen(true);
+            // Aqui tem um detalhe técnico: o modal é assíncrono. 
+            // Para não travar o cálculo, vamos deixar ele ver a oferta e o cálculo acontece por trás? 
+            // Ou ele precisa fechar para ver? 
+            // O ideal para conversão é ele ver a oferta ANTES do resultado.
+            // Mas para o MVP, vamos deixar o Modal abrir e o cálculo seguir (User Experience vs Marketing).
+            // SE o usuário pediu "ao tentar usar", vamos abrir e ele decide.
+        }
+
         const success = await incrementUsage();
         if (!success) {
             alert("Erro de conexão. Tente novamente.");
@@ -131,7 +149,8 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
             <PricingModal
                 isOpen={isPricingModalOpen}
                 onClose={() => setIsPricingModalOpen(false)}
-                onSelectPlan={() => window.open('https://checkout.stripe.com/exemplo', '_blank')}
+                // LINK ASAAS: Plano Padrão (R$ 99/ano)
+                onSelectPlan={() => window.open('SUA_URL_ASAAs_PLANO_PADRAO_AQUI', '_blank')}
                 currentPlan={userPlan}
                 trigger="limit_reached"
             />
@@ -140,6 +159,11 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                 isOpen={isProfileModalOpen}
                 onClose={() => setIsProfileModalOpen(false)}
                 profile={displayProfile}
+            />
+
+            <SpecialOfferModal
+                isOpen={isSpecialOfferModalOpen}
+                onClose={() => setIsSpecialOfferModalOpen(false)}
             />
 
             {/* Header */}
@@ -230,8 +254,28 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                         setParams={setFinancingParams}
                         results={financingResults}
                         onCalculate={handleFinancingCalculate}
-                        onPrint={() => window.print()}
-                        onShare={(text) => window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank')}
+                        onPrint={() => {
+                            if (userPlan !== 'plus') {
+                                if (usageCount >= 3 && usageCount < 5) {
+                                    setIsSpecialOfferModalOpen(true);
+                                } else {
+                                    setIsPricingModalOpen(true);
+                                }
+                                return;
+                            }
+                            window.print();
+                        }}
+                        onShare={(text) => {
+                            if (userPlan !== 'plus') {
+                                if (usageCount >= 3 && usageCount < 5) {
+                                    setIsSpecialOfferModalOpen(true);
+                                } else {
+                                    setIsPricingModalOpen(true);
+                                }
+                                return;
+                            }
+                            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+                        }}
                     />
                 )}
 

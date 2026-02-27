@@ -128,6 +128,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
             <ul className="mt-4 space-y-2 text-sm text-gray-600">
               <li className="flex gap-2"><Check className="w-4 h-4 text-emerald-500" /> Uso Ilimitado</li>
               <li className="flex gap-2"><Check className="w-4 h-4 text-emerald-500" /> Todas calculadoras</li>
+              <li className="flex gap-2"><Check className="w-4 h-4 text-emerald-500" /> Envio por WhatsApp e PDF</li>
             </ul>
 
             <div className="mb-4 mt-4">

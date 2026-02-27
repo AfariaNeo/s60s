@@ -59,9 +59,31 @@ Deno.serve(async (req: Request) => {
         }
 
         if (!userId) {
-            console.error('Webhook received but no externalReference (userId) found in payment or subscription.');
-            // We return 200 to Asaas so they stop retrying, but we log the error.
-            return new Response(JSON.stringify({ received: true, error: "Missing externalReference" }), { status: 200 });
+            console.log('No externalReference found. Searching by customer email...');
+            const customerEmail = payment.customerEmail || payment.email;
+
+            if (customerEmail) {
+                // 2. Connect to Supabase Admin (needed earlier now)
+                const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+                const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+                const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
+
+                const { data: profile } = await supabaseAdmin
+                    .from('profiles')
+                    .select('id')
+                    .eq('email', customerEmail)
+                    .single();
+
+                if (profile) {
+                    userId = profile.id;
+                    console.log("Recovered User ID from Email:", userId);
+                }
+            }
+        }
+
+        if (!userId) {
+            console.error('Webhook received but no externalReference or matching email found.');
+            return new Response(JSON.stringify({ received: true, error: "User not found" }), { status: 200 });
         }
 
         // 2. Connect to Supabase Admin

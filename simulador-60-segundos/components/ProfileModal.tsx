@@ -17,7 +17,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, profile })
   if (!isOpen || !profile) return null;
 
   const handlePasswordReset = async () => {
-    if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
     }
 

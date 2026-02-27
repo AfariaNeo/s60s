@@ -8,6 +8,7 @@ import { AnalyticsTracker, initGA } from './components/AnalyticsTracker';
 import { AdminDashboard } from './components/AdminDashboard';
 import LandingPage from './components/LandingPage';
 import LegalPage from './components/LegalPage';
+import LandingPageAggressive from './components/LandingPageAggressive';
 
 // Initialize GA4
 initGA();
@@ -31,6 +32,7 @@ export default function SimulatorApp() {
       <Routes>
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/legal" element={<LegalPage />} />
+        <Route path="/vendas-pro" element={<LandingPageAggressive />} />
         <Route
           path="/login"
           element={!user ? <AuthPage /> : <Navigate to="/" />}

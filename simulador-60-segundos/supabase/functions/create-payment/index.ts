@@ -60,7 +60,7 @@ Deno.serve(async (req: Request) => {
             console.error("JSON Parse Error:", e);
         }
 
-        const { billingCycle, cpf } = body;
+        const { billingCycle, cpf, discountValue } = body;
 
         if (!asaasKey) {
             throw new Error("Missing Asaas API Key Configuration");
@@ -117,24 +117,31 @@ Deno.serve(async (req: Request) => {
         }
 
         // --- SUBSCRIPTION CREATION (RECURRING) ---
-        const value = billingCycle === 'annual' ? 99.00 : 9.90;
+        let value = billingCycle === 'annual' ? 99.00 : 9.90;
         const description = billingCycle === 'annual' ? 'Simulador 60s (Assinatura Anual)' : 'Simulador 60s (Mensal)';
         const cycle = billingCycle === 'annual' ? 'YEARLY' : 'MONTHLY';
 
-        // Create Subscription
-        // Note: Asaas /subscriptions endpoint
+        // Aplicar desconto direto no valor da assinatura se houver
+        if (discountValue && discountValue > 0) {
+            value = Math.max(0, value - discountValue);
+            console.log(`Creating subscription with direct discounted value: ${value}`);
+        }
+
+        // Create Subscription object
+        const subscriptionBody: any = {
+            customer: customerId,
+            billingType: 'UNDEFINED',
+            value,
+            nextDueDate: new Date(Date.now() + 10 * 60 * 1000).toISOString().split('T')[0],
+            cycle,
+            description,
+            externalReference: user.id
+        };
+
         const subscriptionResp = await fetch(`${ASAAS_API_URL}/subscriptions`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'access_token': asaasKey },
-            body: JSON.stringify({
-                customer: customerId,
-                billingType: 'UNDEFINED', // Allow user to choose (or specify if needed)
-                value,
-                nextDueDate: new Date(Date.now() + 10 * 60 * 1000).toISOString().split('T')[0], // Today (or close to it) to charge immediately
-                cycle,
-                description,
-                externalReference: user.id
-            })
+            body: JSON.stringify(subscriptionBody)
         });
 
         const subscriptionData = await subscriptionResp.json();
@@ -144,36 +151,38 @@ Deno.serve(async (req: Request) => {
             throw new Error(`Subscription Rejected: ${msg}`);
         }
 
-        // Subscription created successfully. Now we need the URL for the user to pay.
-        // For subscriptions, Asaas might not return 'invoiceUrl' directly on the subscription object in all API versions.
-        // We usually need to fetch the generated payments for this subscription.
+        console.log(`Subscription created: ${subscriptionData.id}. Fetching payment URL...`);
 
-        console.log(`Subscription created: ${subscriptionData.id}. Fetching payment...`);
+        // Se o Asaas já retornou a invoiceUrl na assinatura, usamos ela
+        let paymentUrl = subscriptionData.invoiceUrl;
 
-        // Fetch the payment generated for this subscription
-        const paymentsResp = await fetch(`${ASAAS_API_URL}/subscriptions/${subscriptionData.id}/payments`, {
-            headers: { 'access_token': asaasKey }
-        });
+        // Caso contrário, buscamos o primeiro pagamento
+        if (!paymentUrl) {
+            const paymentsResp = await fetch(`${ASAAS_API_URL}/subscriptions/${subscriptionData.id}/payments`, {
+                headers: { 'access_token': asaasKey }
+            });
+            const paymentsData = await paymentsResp.json();
+            paymentUrl = paymentsData.data?.[0]?.invoiceUrl;
+        }
 
-        const paymentsData = await paymentsResp.json();
-        const firstPayment = paymentsData.data?.[0];
-
-        if (!firstPayment) {
-            // Fallback: Use subscription billUrl if available (usually for credit card only management)
-            // But prefer the payment invoiceUrl
-            throw new Error("Subscription created but no payment/invoice generated yet.");
+        if (!paymentUrl) {
+            throw new Error("Não foi possível gerar o link de pagamento. Tente novamente.");
         }
 
         return new Response(
-            JSON.stringify({ paymentUrl: firstPayment.invoiceUrl, id: subscriptionData.id }),
+            JSON.stringify({ paymentUrl: paymentUrl, id: subscriptionData.id }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         );
 
     } catch (error: any) {
         console.error("Function Error:", error);
+        // Retornamos o erro com status 400 para que o modal mostre a mensagem real
         return new Response(
-            JSON.stringify({ error: error.message || "Unknown Error" }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+            JSON.stringify({
+                error: error.message || "Erro desconhecido",
+                details: error.stack
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
         )
     }
 })
