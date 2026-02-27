@@ -70,12 +70,12 @@ export default function LandingPageAggressive() {
                         O segredo dos corretores que mais vendem
                     </div>
 
-                    <h1 className="text-4xl md:text-7xl font-black text-white mb-8 leading-[1.1] tracking-tight">
-                        Pare de <span className="text-red-500">perder vendas</span> por demora nos cálculos.
+                    <h1 className="text-5xl md:text-7xl font-black text-white mb-8 leading-[1.1] tracking-tight uppercase">
+                        PARE DE <span className="text-red-500">PERDER VENDAS</span> PORQUE VOCÊ DEMORA PRA CALCULAR.
                     </h1>
 
-                    <p className="max-w-2xl mx-auto text-lg md:text-xl text-gray-400 mb-12 leading-relaxed">
-                        Enquanto você fala "vou te mandar a simulação", seu concorrente já enviou o <span className="text-white font-semibold">PDF completo no WhatsApp</span>. Recupere sua autoridade e feche o negócio na hora.
+                    <p className="max-w-2xl mx-auto text-lg md:text-xl text-gray-400 mb-12 leading-relaxed font-medium">
+                        A incerteza é o túmulo da venda imobiliária. Enquanto você diz "vou ver com o banco e te mando no fim do dia", o cliente assina com o corretor que tinha as respostas <span className="text-white font-bold">em 60 segundos.</span>
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
@@ -101,12 +101,12 @@ export default function LandingPageAggressive() {
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="grid md:grid-cols-2 gap-16 items-center">
                         <div>
-                            <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-8 leading-tight">
-                                A verdade dói: O cliente não espera. <br />
-                                <span className="text-emerald-500">A dúvida mata a venda.</span>
+                            <h2 className="text-3xl md:text-5xl font-black text-white mb-8 leading-tight uppercase">
+                                Você é treinado para vender. <br />
+                                <span className="text-emerald-500">Não para errar conta.</span>
                             </h2>
-                            <p className="text-gray-400 text-lg mb-10">
-                                No mercado imobiliário, o tempo é seu maior inimigo. Se você não der a resposta financeira na hora da visita, a empolgação do cliente morre.
+                            <p className="text-gray-400 text-lg mb-10 font-medium leading-relaxed">
+                                Quando o cliente solta aquele: "Mas e a documentação? E as taxas? Cabe no meu bolso?", você não pode gaguejar. Você é o especialista, haja como tal. Retire do bolso todas as respostas em segundos.
                             </p>
 
                             <div className="space-y-6">
@@ -132,33 +132,40 @@ export default function LandingPageAggressive() {
                             </div>
                         </div>
 
-                        <div className="relative">
-                            <div className="bg-gradient-to-br from-gray-800 to-black p-1 rounded-[2.5rem] shadow-2xl border border-white/10">
-                                <div className="bg-[#0a0a0a] rounded-[2.2rem] overflow-hidden aspect-[9/16] relative">
-                                    {/* Mockup UI */}
-                                    <div className="absolute inset-0 p-6 flex flex-col justify-center">
-                                        <div className="space-y-4">
-                                            <div className="h-8 bg-gray-800 rounded-lg w-3/4 animate-pulse"></div>
-                                            <div className="h-32 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex flex-col items-center justify-center">
-                                                <span className="text-xs text-emerald-500 font-bold uppercase">Parcela Inicial</span>
-                                                <span className="text-3xl font-black text-white">R$ 3.842,00</span>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <div className="h-20 bg-gray-900 border border-white/5 rounded-xl"></div>
-                                                <div className="h-20 bg-gray-900 border border-white/5 rounded-xl"></div>
-                                            </div>
-                                            <div className="h-12 bg-emerald-600 rounded-xl flex items-center justify-center font-bold text-white">
-                                                <MessageCircle className="w-4 h-4 mr-2" /> Enviar WhatsApp
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div className="relative w-full h-[500px] md:h-[650px] flex items-center justify-center mt-10 md:mt-0 perspective-[2000px]">
+                            {/* Comission Mockup (Back Left) */}
+                            <img
+                                src="/images/app-comissao.png"
+                                alt="Comissão"
+                                className="absolute top-0 right-0 w-[200px] md:w-[260px] rounded-[2rem] shadow-2xl border-4 border-gray-900 opacity-60 transform rotate-12 translate-x-12 blur-[1px] transition-all hover:blur-none hover:opacity-100 hover:z-40 hover:scale-105 duration-300"
+                            />
+
+                            {/* Costs Mockup (Back Right) */}
+                            <img
+                                src="/images/app-custos.png"
+                                alt="Custos"
+                                className="absolute bottom-10 left-0 w-[200px] md:w-[260px] rounded-[2rem] shadow-2xl border-4 border-gray-900 opacity-60 transform -rotate-12 -translate-x-12 blur-[1px] transition-all hover:blur-none hover:opacity-100 hover:z-40 hover:scale-105 duration-300"
+                            />
+
+                            {/* Financing Mockup (Middle) */}
+                            <img
+                                src="/images/app-financiamento.png"
+                                alt="Financiamento"
+                                className="absolute w-[220px] md:w-[280px] rounded-[2rem] shadow-2xl shadow-emerald-900/40 border-4 border-gray-800 transform rotate-[-6deg] -translate-y-8 translate-x-4 z-10 transition-all hover:scale-105 hover:z-40 duration-300"
+                            />
+
+                            {/* Pricing Mockup (Front Center) */}
+                            <img
+                                src="/images/app-precificacao.png"
+                                alt="Precificação"
+                                className="absolute w-[240px] md:w-[320px] rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(16,185,129,0.3)] border-4 border-[#0a0a0a] transform rotate-3 translate-y-12 -translate-x-8 z-20 transition-all hover:scale-105 hover:z-40 duration-300"
+                            />
+
                             {/* Floating Badge */}
-                            <div className="absolute -bottom-6 -right-6 bg-emerald-600 p-6 rounded-2xl shadow-2xl text-center rotate-3 scale-110">
-                                <p className="text-xs font-bold text-emerald-200 uppercase">Resultado</p>
-                                <p className="text-3xl font-black text-white leading-none mt-1">+40%</p>
-                                <p className="text-[10px] font-medium text-emerald-100 uppercase mt-1">Em conversão</p>
+                            <div className="absolute -bottom-8 right-0 md:-right-10 bg-gradient-to-br from-emerald-500 to-emerald-700 p-6 rounded-3xl shadow-2xl text-center rotate-6 scale-110 z-50 border border-emerald-400/30">
+                                <p className="text-xs font-black text-emerald-100 uppercase tracking-widest">+ CREDIBILIDADE</p>
+                                <p className="text-4xl font-black text-white leading-none mt-1">100%</p>
+                                <p className="text-[10px] font-bold text-emerald-100 uppercase mt-1">Fechamento na hora</p>
                             </div>
                         </div>
                     </div>
