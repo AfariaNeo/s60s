@@ -82,10 +82,49 @@ create policy "Users can view own events"
 on public.user_events for select
 using ( auth.uid() = user_id );
 
--- RLS Policy: Sistema pode inserir eventos (via Edge Function com SERVICE_ROLE)
-create policy "System can insert events"
+-- RLS Policy: Usuário só pode inserir seus próprios eventos
+create policy "Users can insert own events"
 on public.user_events for insert
-with check ( true );
+with check ( auth.uid() = user_id );
+
+-- ============================================
+-- ADMIN ACCESS (SEGURO)
+-- ============================================
+
+create table if not exists public.admin_users (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  created_at timestamp with time zone default timezone('utc'::text, now())
+);
+
+alter table public.admin_users enable row level security;
+
+create policy "Admin can view own admin row"
+on public.admin_users for select
+using (auth.uid() = user_id);
+
+create or replace function public.is_admin(uid uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.admin_users au
+    where au.user_id = uid
+  );
+$$;
+
+grant execute on function public.is_admin(uuid) to authenticated;
+
+create policy "Admins can view all profiles"
+on public.profiles for select
+using (public.is_admin(auth.uid()));
+
+create policy "Admins can view all events"
+on public.user_events for select
+using (public.is_admin(auth.uid()));
 
 -- ============================================
 -- TABELA RESUMO DIÁRIO (para performance)

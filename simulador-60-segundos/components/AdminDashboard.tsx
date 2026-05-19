@@ -18,8 +18,6 @@ export function AdminDashboard() {
     const [isAdmin, setIsAdmin] = useState(false);
     const [checkingAuth, setCheckingAuth] = useState(true);
 
-    const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL;
-
     useEffect(() => {
         checkAdmin();
     }, []);
@@ -29,7 +27,19 @@ export function AdminDashboard() {
             data: { user },
         } = await supabase.auth.getUser();
 
-        if (user?.email === ADMIN_EMAIL) {
+        if (!user?.id) {
+            setIsAdmin(false);
+            setCheckingAuth(false);
+            return;
+        }
+
+        const { data, error } = await supabase
+            .from('admin_users')
+            .select('user_id')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+        if (!error && data?.user_id) {
             setIsAdmin(true);
             fetchStats();
         } else {

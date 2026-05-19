@@ -11,6 +11,7 @@ import LegalPage from './components/LegalPage';
 import LandingPageAggressive from './components/LandingPageAggressive';
 import LandingPageAggressive2 from './components/LandingPageAggressive2';
 import { trackEvent } from './services/analyticsService';
+import { useAdminAccess } from './hooks/useAdminAccess';
 
 function RouteAnalytics({ userId }: { userId?: string }) {
   const location = useLocation();
@@ -37,9 +38,10 @@ initGA();
 export default function SimulatorApp() {
   // --- AUTH & USER STATE ---
   const { user, loading, signOut } = useAuth();
+  const { isAdmin, loading: adminLoading } = useAdminAccess();
 
   // Show loading spinner while auth is checking
-  if (loading) {
+  if (loading || adminLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
@@ -52,7 +54,7 @@ export default function SimulatorApp() {
       <AnalyticsTracker />
       <RouteAnalytics userId={user?.id} />
       <Routes>
-        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin" element={isAdmin ? <AdminDashboard /> : <Navigate to="/" />} />
         <Route path="/legal" element={<LegalPage />} />
         <Route path="/vendas-pro" element={<LandingPageAggressive />} />
         <Route path="/vendas-explosivo" element={<LandingPageAggressive2 />} />
