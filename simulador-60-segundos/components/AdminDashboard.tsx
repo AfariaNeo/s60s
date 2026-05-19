@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { UserProfile } from "../types";
 import { Loader2, Users, CreditCard, Activity, Calendar } from "lucide-react";
+import { AnalyticsDashboard } from "./AnalyticsDashboard";
 
 export function AdminDashboard() {
     const [loading, setLoading] = useState(true);
@@ -17,6 +18,7 @@ export function AdminDashboard() {
 
     // Replace with your actual admin email or management logic
     const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL;
+        const [activeTab, setActiveTab] = useState<'stats' | 'analytics'>('stats');
 
     useEffect(() => {
         checkAdmin();
@@ -96,6 +98,32 @@ export function AdminDashboard() {
                 <StatCard
                     title="Usuários Plus"
                     value={stats.plusUsers}
+                <div className="flex items-center justify-between mb-8">
+                    <h1 className="text-3xl font-bold text-gray-900">Painel Administrativo</h1>
+                
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setActiveTab('stats')}
+                            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                                activeTab === 'stats'
+                                    ? 'bg-emerald-600 text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                        >
+                            Estatísticas
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('analytics')}
+                            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                                activeTab === 'analytics'
+                                    ? 'bg-emerald-600 text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                        >
+                            Analytics
+                        </button>
+                    </div>
+                </div>
                     icon={<CreditCard className="w-6 h-6 text-purple-600" />}
                     color="bg-purple-100"
                 />
@@ -129,6 +157,9 @@ export function AdminDashboard() {
                         <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
                             <div className="bg-purple-600 h-2.5 rounded-full" style={{ width: `${(stats.plusUsers / stats.totalUsers) * 100}%` }}></div>
                         </div>
+                {activeTab === 'analytics' && (
+                    <AnalyticsDashboard />
+                )}
                     </div>
                 </div>
             </div>
