@@ -1,8 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Check, X, Crown, Loader2 } from 'lucide-react';
 import { UserPlan } from '../types';
 import { supabase } from '../lib/supabaseClient';
+import { useAnalytics } from '../hooks/useAnalytics';
 
 interface PricingModalProps {
   isOpen: boolean;
@@ -14,9 +15,16 @@ interface PricingModalProps {
 }
 
 const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPlan, currentPlan, trigger = 'user_click', isProcessing = false }) => {
+  const { track } = useAnalytics();
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
   const [isLoading, setIsLoading] = useState(false);
   const [cpf, setCpf] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      track('modal_open', 'pricing_modal_opened', { trigger, currentPlan }, 'PricingModal');
+    }
+  }, [isOpen, trigger, currentPlan, track]);
 
   const formatCPF = (value: string) => {
     return value
@@ -28,8 +36,11 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
   };
 
   const handleSubscribe = async (plan: UserPlan, cycle: 'monthly' | 'annual') => {
+    track('button_click', 'upgrade_button_clicked', { plan, billingCycle: cycle }, 'PricingModal');
+
     // 1. CPF Validation (Restored)
     if (cpf.length < 14) {
+      track('validation_error', 'cpf_invalid', { cpfLength: cpf.length }, 'PricingModal');
       alert("Por favor, digite um CPF válido para emissão da nota fiscal.");
       return;
     }
@@ -40,6 +51,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
       const token = session?.access_token;
 
       if (!token) {
+        track('error', 'session_expired_during_upgrade', {}, 'PricingModal');
         alert("Sessão expirada. Faça login novamente.");
         return;
       }
@@ -51,6 +63,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
 
       if (error) {
         console.error("Function Error:", error);
+        track('error', 'create_payment_error', { message: error.message }, 'PricingModal');
         // Extract error message if possible
         let errorMsg = "Erro desconhecido";
         if (error instanceof Error) errorMsg = error.message;
@@ -63,19 +76,25 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
       const { paymentUrl, error: paymentError } = data;
 
       if (paymentError) {
+        track('error', 'payment_url_error', { paymentError }, 'PricingModal');
         alert(`Erro: ${paymentError}`);
         return;
       }
 
       if (paymentUrl) {
+        track('conversion', 'payment_url_generated', { billingCycle: cycle }, 'PricingModal');
         // Redirect current tab to avoid popup blockers on mobile
         window.location.href = paymentUrl;
       } else {
+        track('error', 'payment_url_missing', {}, 'PricingModal');
         alert('Erro: Link de pagamento não gerado.');
       }
 
     } catch (err) {
       console.error(err);
+      track('error', 'handle_subscribe_exception', {
+        message: err instanceof Error ? err.message : 'unknown',
+      }, 'PricingModal');
       alert('Ocorreu um erro ao processar.');
     } finally {
       setIsLoading(false);

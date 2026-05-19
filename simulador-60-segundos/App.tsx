@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import AuthPage from './components/AuthPage';
 import Dashboard from './components/Dashboard';
@@ -10,6 +10,26 @@ import LandingPage from './components/LandingPage';
 import LegalPage from './components/LegalPage';
 import LandingPageAggressive from './components/LandingPageAggressive';
 import LandingPageAggressive2 from './components/LandingPageAggressive2';
+import { trackEvent } from './services/analyticsService';
+
+function RouteAnalytics({ userId }: { userId?: string }) {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!userId) return;
+
+    trackEvent({
+      user_id: userId,
+      event_type: 'page_view',
+      event_name: location.pathname === '/' ? 'home' : location.pathname.replace(/\//g, '_'),
+      page_path: location.pathname,
+      metadata: { trackedAt: new Date().toISOString() },
+      user_agent: navigator.userAgent,
+    });
+  }, [location.pathname, userId]);
+
+  return null;
+}
 
 // Initialize GA4
 initGA();
@@ -30,6 +50,7 @@ export default function SimulatorApp() {
   return (
     <BrowserRouter>
       <AnalyticsTracker />
+      <RouteAnalytics userId={user?.id} />
       <Routes>
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/legal" element={<LegalPage />} />

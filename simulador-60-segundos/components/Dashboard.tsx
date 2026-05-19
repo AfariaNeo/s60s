@@ -11,6 +11,7 @@ import CostsTab from './CostsTab';
 import SpecialOfferModal from './SpecialOfferModal';
 import { useSimulation } from '../hooks/useSimulation';
 import { useUserProfile } from '../hooks/useUserProfile';
+import { useAnalytics } from '../hooks/useAnalytics';
 
 // --- TIPOS ---
 type Tab = 'financing' | 'commission' | 'pricing' | 'costs';
@@ -21,6 +22,7 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ user, signOut }: DashboardProps) {
+    const { track } = useAnalytics();
     // --- AUTH & PROFILE ---
     const { profile, loading: loadingProfile, incrementUsage } = useUserProfile(user);
 
@@ -66,11 +68,21 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
         return usageCount >= usageLimit;
     };
 
+    const openPricingModal = (source: 'limit_reached' | 'user_click' | 'feature_blocked') => {
+        setIsPricingModalOpen(true);
+        track('modal_open', 'pricing_modal_opened', { source, userPlan, usageCount }, 'PricingModal');
+    };
+
+    const handleTabChange = (tab: Tab) => {
+        setActiveTab(tab);
+        track('tab_change', `tab_${tab}`, { tab }, 'Dashboard');
+    };
+
     const handleConsumeToken = async () => {
         if (userPlan === 'plus') return true;
 
         if (usageCount >= usageLimit) {
-            setIsPricingModalOpen(true);
+            openPricingModal('limit_reached');
             return false;
         }
 
@@ -106,6 +118,12 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
             if (!authorized) return;
 
             calculateFinancing();
+            track('calculation', 'financing_calculated', {
+                propertyValue: financingParams.propertyValue,
+                downPaymentPercent: financingParams.downPaymentPercent,
+                months: financingParams.months,
+                annualInterestRate: financingParams.annualInterestRate,
+            }, 'FinancingTab');
         } catch (error: any) {
             console.error("Erro ao calcular financiamento:", error);
             alert("Erro ao calcular. Verifique os valores e tente novamente.");
@@ -119,6 +137,12 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
             const authorized = await handleConsumeToken();
             if (!authorized) return;
             setCommissionResults(calculateCommission(commissionParams));
+            track('calculation', 'commission_calculated', {
+                propertyValue: commissionParams.propertyValue,
+                totalCommissionPercent: commissionParams.totalCommissionPercent,
+                agentSharePercent: commissionParams.agentSharePercent,
+                calculationMode: commissionParams.calculationMode,
+            }, 'CommissionTab');
         } catch (error: any) {
             console.error("Erro ao calcular comissão:", error);
             alert("Erro ao calcular comissão. Verifique os valores.");
@@ -131,6 +155,12 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
             const authorized = await handleConsumeToken();
             if (!authorized) return;
             setPricingResults(calculatePricing(pricingParams));
+            track('calculation', 'pricing_calculated', {
+                inputValue: pricingParams.inputValue,
+                commissionPercent: pricingParams.commissionPercent,
+                negotiationMarginPercent: pricingParams.negotiationMarginPercent,
+                mode: pricingParams.mode,
+            }, 'PricingTab');
         } catch (error: any) {
             console.error("Erro ao calcular precificação:", error);
             alert("Erro ao calcular precificação. Verifique os valores.");
@@ -143,6 +173,12 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
             const authorized = await handleConsumeToken();
             if (!authorized) return;
             setCostResults(calculatePurchaseCosts(costParams));
+            track('calculation', 'costs_calculated', {
+                propertyValue: costParams.propertyValue,
+                downPaymentPercent: costParams.downPaymentPercent,
+                itbiPercent: costParams.itbiPercent,
+                registryPercent: costParams.registryPercent,
+            }, 'CostsTab');
         } catch (error: any) {
             console.error("Erro ao calcular custos:", error);
             alert("Erro ao calcular custos. Verifique os valores.");
@@ -205,7 +241,7 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
 
                         {userPlan !== 'plus' && (
                             <button
-                                onClick={() => setIsPricingModalOpen(true)}
+                                onClick={() => openPricingModal('user_click')}
                                 className="flex items-center gap-2 bg-gray-900 text-white px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-gray-800 transition-colors shadow-sm"
                             >
                                 <Crown className="w-3 h-3 text-yellow-400" />
@@ -229,7 +265,10 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                             </button>
 
                             <button
-                                onClick={() => signOut()}
+                                onClick={() => {
+                                    track('button_click', 'sign_out_clicked', { from: 'dashboard_header' }, 'Dashboard');
+                                    signOut();
+                                }}
                                 className="p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
                                 title="Sair da conta"
                                 aria-label="Sair da conta"
@@ -254,7 +293,7 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                         ].map((tab) => (
                             <button
                                 key={tab.id}
-                                onClick={() => setActiveTab(tab.id as Tab)}
+                                onClick={() => handleTabChange(tab.id as Tab)}
                                 className={`flex items-center justify-center sm:justify-start gap-2 px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${activeTab === tab.id
                                     ? 'bg-emerald-600 text-white shadow-md'
                                     : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
@@ -279,10 +318,11 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                                 if (usageCount >= 3 && usageCount < 5) {
                                     setIsSpecialOfferModalOpen(true);
                                 } else {
-                                    setIsPricingModalOpen(true);
+                                    openPricingModal('feature_blocked');
                                 }
                                 return;
                             }
+                            track('button_click', 'print_clicked', { from: 'financing_results' }, 'FinancingTab');
                             window.print();
                         }}
                         onShare={(text) => {
@@ -290,10 +330,11 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                                 if (usageCount >= 3 && usageCount < 5) {
                                     setIsSpecialOfferModalOpen(true);
                                 } else {
-                                    setIsPricingModalOpen(true);
+                                    openPricingModal('feature_blocked');
                                 }
                                 return;
                             }
+                            track('button_click', 'whatsapp_share_clicked', { from: 'financing_results' }, 'FinancingTab');
                             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
                         }}
                     />
