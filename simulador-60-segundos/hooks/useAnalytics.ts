@@ -31,7 +31,11 @@ export function useAnalytics() {
                     event_name: eventName,
                     component_name: componentName,
                     page_path: window.location.pathname,
-                    metadata: metadata || {},
+                    metadata: {
+                        ...(metadata || {}),
+                        user_email: user.email || null,
+                        user_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+                    },
                     user_agent: navigator.userAgent,
                 });
             } catch (error) {
