@@ -99,34 +99,54 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
 
     // --- WRAPPER HANDLERS ---
     const handleFinancingCalculate = async () => {
-        if (financingParams.propertyValue === 0) return alert("Preencha o valor do imóvel");
+        try {
+            if (financingParams.propertyValue === 0) return alert("Preencha o valor do imóvel");
 
-        const authorized = await handleConsumeToken();
-        if (!authorized) return;
+            const authorized = await handleConsumeToken();
+            if (!authorized) return;
 
-        calculateFinancing();
+            calculateFinancing();
+        } catch (error: any) {
+            console.error("Erro ao calcular financiamento:", error);
+            alert("Erro ao calcular. Verifique os valores e tente novamente.");
+        }
     };
 
     // ...
     const handleCommissionCalculate = async () => {
-        if (commissionParams.propertyValue === 0) return alert("Preencha o valor");
-        const authorized = await handleConsumeToken();
-        if (!authorized) return;
-        setCommissionResults(calculateCommission(commissionParams));
+        try {
+            if (commissionParams.propertyValue === 0) return alert("Preencha o valor");
+            const authorized = await handleConsumeToken();
+            if (!authorized) return;
+            setCommissionResults(calculateCommission(commissionParams));
+        } catch (error: any) {
+            console.error("Erro ao calcular comissão:", error);
+            alert("Erro ao calcular comissão. Verifique os valores.");
+        }
     };
 
     const handlePricingCalculate = async () => {
-        if (pricingParams.inputValue === 0) return alert("Preencha o valor");
-        const authorized = await handleConsumeToken();
-        if (!authorized) return;
-        setPricingResults(calculatePricing(pricingParams));
+        try {
+            if (pricingParams.inputValue === 0) return alert("Preencha o valor");
+            const authorized = await handleConsumeToken();
+            if (!authorized) return;
+            setPricingResults(calculatePricing(pricingParams));
+        } catch (error: any) {
+            console.error("Erro ao calcular precificação:", error);
+            alert("Erro ao calcular precificação. Verifique os valores.");
+        }
     };
 
     const handleCostsCalculate = async () => {
-        if (costParams.propertyValue === 0) return alert("Preencha o valor");
-        const authorized = await handleConsumeToken();
-        if (!authorized) return;
-        setCostResults(calculatePurchaseCosts(costParams));
+        try {
+            if (costParams.propertyValue === 0) return alert("Preencha o valor");
+            const authorized = await handleConsumeToken();
+            if (!authorized) return;
+            setCostResults(calculatePurchaseCosts(costParams));
+        } catch (error: any) {
+            console.error("Erro ao calcular custos:", error);
+            alert("Erro ao calcular custos. Verifique os valores.");
+        }
     };
 
     // const handleAiRun = () => {

@@ -55,6 +55,15 @@ export default function PricingTab({
         }
 
         const numValue = parseFloat(value);
+        
+        // Validação de percentuais máximos
+        if (name === 'commissionPercent' && numValue > 10) {
+            return; // Máximo 10% de comissão
+        }
+        if (name === 'negotiationMarginPercent' && numValue > 20) {
+            return; // Máximo 20% de margem
+        }
+        
         setParams(prev => ({
             ...prev,
             [name]: isNaN(numValue) ? 0 : numValue

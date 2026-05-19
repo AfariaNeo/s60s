@@ -50,6 +50,16 @@ export default function CostsTab({
             return;
         }
 
+        // Limit Registry to max 2%
+        if (name === 'registryPercent' && numValue > 2) {
+            return;
+        }
+
+        // Limit Down Payment to max 99%
+        if (name === 'downPaymentPercent' && numValue > 99) {
+            return;
+        }
+
         setParams(prev => ({
             ...prev,
             [name]: isNaN(numValue) && value !== '' ? value : numValue

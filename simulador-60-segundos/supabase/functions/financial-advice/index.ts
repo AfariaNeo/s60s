@@ -1,9 +1,29 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { GoogleGenerativeAI } from "https://esm.sh/@google/genai-sdk" // Generic hypothetical import, or use fetch directly if SDK issues. 
-// Better: Use direct REST API to avoid bulky SDKs in Edge Functions or use the official one if lightweight.
-// Let's use direct fetching for stability in Deno or the official web-compatible SDK.
-// Actually, standard fetch is easiest for Deno.
+import { GoogleGenerativeAI } from "https://esm.sh/@google/genai-sdk"
+
+// Rate limiting simples: armazenar requisições por IP (em produção, usar Redis)
+const requestCache = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_REQUESTS = 10; // Máximo 10 requisições
+const RATE_LIMIT_WINDOW_MS = 60000; // Por minuto
+
+const checkRateLimit = (clientIp: string): boolean => {
+    const now = Date.now();
+    const record = requestCache.get(clientIp);
+    
+    if (!record || now > record.resetTime) {
+        // Nova janela
+        requestCache.set(clientIp, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+        return true;
+    }
+    
+    if (record.count < RATE_LIMIT_REQUESTS) {
+        record.count++;
+        return true;
+    }
+    
+    return false;
+};
 
 // CORS restrictivo: apenas seu domínio (substituir com o domínio real em produção)
 const ALLOWED_ORIGINS = [
@@ -22,8 +42,16 @@ const getCorsHeaders = (origin?: string) => {
 
 serve(async (req: Request) => {
     const origin = req.headers.get('origin');
-    const origin = req.headers.get('origin');
+    const clientIp = req.headers.get('x-forwarded-for') || 'unknown';
     const corsHeaders = getCorsHeaders(origin);
+    
+    // Rate Limiting Check
+    if (!checkRateLimit(clientIp)) {
+        return new Response(
+            JSON.stringify({ error: 'Rate limit exceeded. Máximo 10 requisições por minuto.' }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+    }
     
     // Handle CORS
     if (req.method === 'OPTIONS') {

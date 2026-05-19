@@ -1,5 +1,28 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
+// Rate limiting simples: armazenar requisições por IP (em produção, usar Redis)
+const requestCache = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_REQUESTS = 5; // Máximo 5 requisições (pagamento é crítico)
+const RATE_LIMIT_WINDOW_MS = 60000; // Por minuto
+
+const checkRateLimit = (clientIp: string): boolean => {
+    const now = Date.now();
+    const record = requestCache.get(clientIp);
+    
+    if (!record || now > record.resetTime) {
+        // Nova janela
+        requestCache.set(clientIp, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+        return true;
+    }
+    
+    if (record.count < RATE_LIMIT_REQUESTS) {
+        record.count++;
+        return true;
+    }
+    
+    return false;
+};
+
 // CORS restrictivo: apenas seu domínio (substituir com o domínio real em produção)
 const ALLOWED_ORIGINS = [
     'http://localhost:3000',
@@ -17,7 +40,16 @@ const getCorsHeaders = (origin?: string) => {
 
 Deno.serve(async (req: Request) => {
     const origin = req.headers.get('origin');
+    const clientIp = req.headers.get('x-forwarded-for') || 'unknown';
     const corsHeaders = getCorsHeaders(origin);
+    
+    // Rate Limiting Check
+    if (!checkRateLimit(clientIp)) {
+        return new Response(
+            JSON.stringify({ error: 'Rate limit exceeded. Máximo 5 requisições de pagamento por minuto.' }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+    }
     
     // Handle CORS
     if (req.method === 'OPTIONS') {
@@ -25,18 +57,20 @@ Deno.serve(async (req: Request) => {
     }
 
     try {
-        console.log("Request received");
-
         // 1. Basic Setup Check
         const supabaseUrl = Deno.env.get('SUPABASE_URL');
         const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY');
         const asaasKey = Deno.env.get('ASAAS_API_KEY');
 
-        console.log("Env Check:", {
-            hasUrl: !!supabaseUrl,
-            hasSupabaseKey: !!supabaseKey,
-            hasAsaasKey: !!asaasKey
-        });
+        // Logging apenas em modo desenvolvimento (evitar exposição em produção)
+        const isDev = Deno.env.get('ENVIRONMENT') === 'development';
+        if (isDev) {
+            console.log("Env Check:", {
+                hasUrl: !!supabaseUrl,
+                hasSupabaseKey: !!supabaseKey,
+                hasAsaasKey: !!asaasKey
+            });
+        }
 
         if (!supabaseUrl || !supabaseKey) {
             throw new Error("Missing Supabase Environment Variables");
@@ -55,22 +89,22 @@ Deno.serve(async (req: Request) => {
         const { data: { user }, error: userError } = await supabase.auth.getUser();
 
         if (userError || !user) {
-            console.error("Auth Fail:", userError);
+            // Log seguro: não expor detalhes de erro internos
+            if (isDev) console.error("Auth Fail:", userError);
             throw new Error("User Authentication Failed");
         }
 
-        console.log("User Authenticated:", user.email);
+        if (isDev) console.log("User Authenticated:", user.id);
 
         // 3. Logic (Asaas)
         const rawBody = await req.text();
-        console.log("DEBUG: Raw Body:", rawBody);
-
+        
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let body: any = {};
         try {
             body = JSON.parse(rawBody);
         } catch (e) {
-            console.error("JSON Parse Error:", e);
+            if (isDev) console.error("JSON Parse Error:", e);
         }
 
         const { billingCycle, cpf, discountValue } = body;
@@ -100,7 +134,7 @@ Deno.serve(async (req: Request) => {
 
         if (customerId) {
             // Update Existing Customer to ensure CPF and NAME are set/updated
-            console.log(`Updating customer ${customerId} with CPF...`);
+            if (isDev) console.log(`Updating customer with CPF...`);
             await fetch(`${ASAAS_API_URL}/customers/${customerId}`, {
                 method: 'POST', // Asaas uses POST/PUT for updates
                 headers: { 'Content-Type': 'application/json', 'access_token': asaasKey },
@@ -110,7 +144,7 @@ Deno.serve(async (req: Request) => {
                 })
             });
         } else {
-            console.log("Creating new customer...");
+            if (isDev) console.log("Creating new customer...");
             const newCostumerResp = await fetch(`${ASAAS_API_URL}/customers`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'access_token': asaasKey },
@@ -164,7 +198,7 @@ Deno.serve(async (req: Request) => {
             throw new Error(`Subscription Rejected: ${msg}`);
         }
 
-        console.log(`Subscription created: ${subscriptionData.id}. Fetching payment URL...`);
+        if (isDev) console.log(`Subscription created. Fetching payment URL...`);
 
         // Se o Asaas já retornou a invoiceUrl na assinatura, usamos ela
         let paymentUrl = subscriptionData.invoiceUrl;
@@ -188,7 +222,7 @@ Deno.serve(async (req: Request) => {
         );
 
     } catch (error: any) {
-        console.error("Function Error:", error);
+        if (isDev) console.error("Function Error:", error);
         // Retornamos o erro com status 400 para que o modal mostre a mensagem real
         return new Response(
             JSON.stringify({
