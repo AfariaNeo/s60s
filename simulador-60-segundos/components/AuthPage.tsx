@@ -24,6 +24,23 @@ export default function AuthPage() {
             if (view === 'login') {
                 await signIn(email, password);
             } else if (view === 'signup') {
+                // --- FIELD VALIDATION ---
+                if (!name.trim()) {
+                    throw new Error("Por favor, informe seu nome completo.");
+                }
+
+                if (!email.trim()) {
+                    throw new Error("Por favor, informe seu e-mail.");
+                }
+
+                if (!password.trim()) {
+                    throw new Error("Por favor, crie uma senha.");
+                }
+
+                if (password.length < 6) {
+                    throw new Error("A senha deve ter pelo menos 6 caracteres.");
+                }
+
                 // --- EMAIL VALIDATION ---
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(email)) {
@@ -37,7 +54,7 @@ export default function AuthPage() {
                 }
                 // ------------------------
 
-                await signUp(email, password, name);
+                await signUp(email, password, name.trim());
 
                 // Track Google Ads Conversion
                 if (typeof (window as any).gtag === 'function') {
