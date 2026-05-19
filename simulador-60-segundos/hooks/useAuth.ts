@@ -49,7 +49,9 @@ export function useAuth() {
     const signOut = async () => {
         const { error } = await supabase.auth.signOut();
         if (error) console.error("Error signing out:", error);
-        localStorage.clear(); // Ensure all tokens are removed
+        // Remover apenas tokens do Supabase, não localStorage completo
+        localStorage.removeItem('sb-auth-token');
+        localStorage.removeItem('sb-refresh-token');
         setUser(null);
     };
 

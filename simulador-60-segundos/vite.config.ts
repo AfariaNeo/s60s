@@ -11,8 +11,8 @@ export default defineConfig(({ mode }) => {
       },
       plugins: [react()],
       define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+        // NOTA: GEMINI_API_KEY NÃO deve ser exposto no bundle.
+        // Usar apenas Edge Functions do Supabase (lado servidor)
       },
       resolve: {
         alias: {

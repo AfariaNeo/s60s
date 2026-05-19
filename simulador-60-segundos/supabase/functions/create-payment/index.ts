@@ -1,11 +1,24 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+// CORS restrictivo: apenas seu domínio (substituir com o domínio real em produção)
+const ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    Deno.env.get('VITE_APP_URL') || 'https://seu-dominio.com'
+];
+
+const getCorsHeaders = (origin?: string) => {
+    const allowedOrigin = ALLOWED_ORIGINS.includes(origin || '') ? origin : '';
+    return {
+        'Access-Control-Allow-Origin': allowedOrigin,
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    };
 }
 
 Deno.serve(async (req: Request) => {
+    const origin = req.headers.get('origin');
+    const corsHeaders = getCorsHeaders(origin);
+    
     // Handle CORS
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
