@@ -92,4 +92,6 @@ export interface UserProfile {
   lastResetDate?: string;
   subscriptionEndDate?: string; // Data ISO do fim da assinatura
   billingCycle?: 'monthly' | 'annual';
+  trialStartedAt?: string; // Data ISO em que o trial legado foi ativado
+  createdAt?: string; // Data ISO de criação do perfil
 }

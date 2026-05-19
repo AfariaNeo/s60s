@@ -84,6 +84,8 @@ export function useUserProfile(user: User | null) {
                         usageCount: rawData.usage_count ?? 0,
                         lastResetDate: rawData.last_reset_date,
                         subscriptionEndDate: rawData.subscription_end_date,
+                        trialStartedAt: rawData.trial_started_at ?? undefined,
+                        createdAt: rawData.created_at ?? undefined,
                         name: resolvedName,
                         email: rawData.email || ''
                     } as UserProfile;
@@ -109,6 +111,8 @@ export function useUserProfile(user: User | null) {
                             usageCount: (resetData as any).usage_count ?? 0,
                             lastResetDate: (resetData as any).last_reset_date,
                             subscriptionEndDate: (resetData as any).subscription_end_date,
+                            trialStartedAt: (resetData as any).trial_started_at ?? undefined,
+                            createdAt: (resetData as any).created_at ?? undefined,
                             name: resolvedName // Keep resolved name
                         } as UserProfile);
 
@@ -203,5 +207,22 @@ export function useUserProfile(user: User | null) {
         return lastReset.getMonth() !== now.getMonth() || lastReset.getFullYear() !== now.getFullYear();
     };
 
-    return { profile, loading, incrementUsage };
+    const updateTrialStartedAt = async (): Promise<boolean> => {
+        if (!user) return false;
+        try {
+            const now = new Date().toISOString();
+            const { error } = await supabase
+                .from('profiles')
+                .update({ trial_started_at: now })
+                .eq('id', user.id);
+            if (error) { console.error('Error updating trial_started_at:', error); return false; }
+            if (profile) setProfile({ ...profile, trialStartedAt: now });
+            return true;
+        } catch (err) {
+            console.error('Unexpected error in updateTrialStartedAt:', err);
+            return false;
+        }
+    };
+
+    return { profile, loading, incrementUsage, updateTrialStartedAt };
 }

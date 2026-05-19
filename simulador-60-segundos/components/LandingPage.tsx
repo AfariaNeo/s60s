@@ -209,9 +209,9 @@ export default function LandingPage() {
                             </div>
                             <p className="text-gray-500 mb-6 text-sm">Para quem está começando a organizar a carteira.</p>
                             <ul className="space-y-4 mb-8 text-left">
-                                <PricingCheck text="5 Simulações / mês" />
-                                <PricingCheck text="Cálculo de Comissões" />
-                                <PricingCheck text="Acesso Básico" />
+                                <PricingCheck text="30 dias grátis, sem cartão" />
+                                <PricingCheck text="Comissão sempre gratuita" />
+                                <PricingCheck text="Acesso a todas as ferramentas no trial" />
                             </ul>
                             <button onClick={() => navigate('/login')} className="w-full py-3 border border-emerald-600 text-emerald-600 font-bold rounded-lg hover:bg-emerald-50 transition-colors">
                                 Começar Grátis

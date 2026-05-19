@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calculator, Crown, LogOut, Building2, Briefcase, Tag, ScrollText, User as UserIcon } from 'lucide-react';
+import { Calculator, Crown, LogOut, Building2, Briefcase, Tag, ScrollText, User as UserIcon, Lock } from 'lucide-react';
 import { CommissionParams, CommissionResult, PricingParams, PricingResult, PurchaseCostParams, PurchaseCostResult, UserPlan } from '../types';
 import { calculateCommission, calculatePricing, calculatePurchaseCosts, formatCurrency } from '../utils/finance';
 import PricingModal from './PricingModal';
@@ -8,7 +8,7 @@ import FinancingTab from './FinancingTab';
 import CommissionTab from './CommissionTab';
 import PricingTab from './PricingTab';
 import CostsTab from './CostsTab';
-import SpecialOfferModal from './SpecialOfferModal';
+import LegacyTrialModal from './LegacyTrialModal';
 import { useSimulation } from '../hooks/useSimulation';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useAnalytics } from '../hooks/useAnalytics';
@@ -24,12 +24,10 @@ interface DashboardProps {
 export default function Dashboard({ user, signOut }: DashboardProps) {
     const { track } = useAnalytics();
     // --- AUTH & PROFILE ---
-    const { profile, loading: loadingProfile, incrementUsage } = useUserProfile(user);
+    const { profile, loading: loadingProfile, incrementUsage, updateTrialStartedAt } = useUserProfile(user);
 
     // Fallback while loading or if error
     const userPlan: UserPlan = profile?.plan || 'free';
-    const usageCount = profile?.usageCount || 0;
-    const usageLimit = 5;
 
     // Smart name resolution: Profile DB > User Metadata > Email > Default
     const userName = profile?.name || user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'Usuário';
@@ -37,11 +35,48 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
     // Update profile object with resolved name for Modal usage
     const displayProfile = profile ? { ...profile, name: userName } : null;
 
+    // --- TRIAL LOGIC (Modelo Híbrido) ---
+    // Usuários cadastrados ANTES desta data são "legados"
+    const ACTIVATION_DATE = new Date('2026-05-19T00:00:00.000Z');
+    const now = new Date();
+    const profileCreatedAt = profile?.createdAt ? new Date(profile.createdAt) : null;
+    const isLegacyUser = profileCreatedAt ? profileCreatedAt <= ACTIVATION_DATE : false;
+    const TRIAL_DAYS = 30;
+
+    let daysRemaining = 0;
+    let isOnTrial = false;
+    let showLegacyTrialModal = false;
+
+    if (userPlan === 'plus') {
+        isOnTrial = false;
+    } else if (!isLegacyUser && profileCreatedAt) {
+        // Novo usuário: trial começa na criação
+        const daysSince = Math.floor((now.getTime() - profileCreatedAt.getTime()) / (1000 * 60 * 60 * 24));
+        daysRemaining = Math.max(0, TRIAL_DAYS - daysSince);
+        isOnTrial = daysRemaining > 0;
+    } else if (isLegacyUser) {
+        if (!profile?.trialStartedAt) {
+            // Ainda não viu o modal — mantém acesso e exibe modal
+            showLegacyTrialModal = true;
+            isOnTrial = true;
+            daysRemaining = TRIAL_DAYS;
+        } else {
+            const daysSince = Math.floor((now.getTime() - new Date(profile.trialStartedAt).getTime()) / (1000 * 60 * 60 * 24));
+            daysRemaining = Math.max(0, TRIAL_DAYS - daysSince);
+            isOnTrial = daysRemaining > 0;
+        }
+    }
+
+    const hasFullAccess = userPlan === 'plus' || isOnTrial;
+
+    // Data de fim do trial para o modal legado
+    const legacyTrialEndDate = new Date();
+    legacyTrialEndDate.setDate(legacyTrialEndDate.getDate() + TRIAL_DAYS);
+
     // --- UI STATE ---
     const [activeTab, setActiveTab] = useState<Tab>('financing');
     const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-    const [isSpecialOfferModalOpen, setIsSpecialOfferModalOpen] = useState(false);
 
     // --- OTHER TABS STATE (Legacy/Inline for now) ---
     const [commissionParams, setCommissionParams] = useState<CommissionParams>({ propertyValue: 0, totalCommissionPercent: 6, agentSharePercent: 50, calculationMode: 'percentage_of_total' });
@@ -62,15 +97,9 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
         runAiAnalysis
     } = useSimulation();
 
-    // --- HELPER DE LIMITES ---
-    const isUsageLimitReached = () => {
-        if (userPlan === 'plus') return false;
-        return usageCount >= usageLimit;
-    };
-
-    const openPricingModal = (source: 'limit_reached' | 'user_click' | 'feature_blocked') => {
+    const openPricingModal = (source: 'limit_reached' | 'user_click' | 'feature_blocked' | 'trial_expired') => {
         setIsPricingModalOpen(true);
-        track('modal_open', 'pricing_modal_opened', { source, userPlan, usageCount }, 'PricingModal');
+        track('modal_open', 'pricing_modal_opened', { source, userPlan, daysRemaining }, 'PricingModal');
     };
 
     const handleTabChange = (tab: Tab) => {
@@ -80,27 +109,10 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
 
     const handleConsumeToken = async () => {
         if (userPlan === 'plus') return true;
-
-        if (usageCount >= usageLimit) {
-            openPricingModal('limit_reached');
+        if (!hasFullAccess) {
+            openPricingModal('trial_expired');
             return false;
         }
-
-        // --- NEW MARKETING LOGIC ---
-        // Se o usuário está no 4º ou 5º crédito (count 3, 4)
-        // Mostramos a oferta imperdível, mas permitimos continuar se ele recusar.
-        if (usageCount >= 3 && usageCount < 5) {
-            // Só mostramos se ele ainda não viu nesta "sessão" ou se preferirmos ser agressivos, sempre que clicar.
-            // Para ser agressivo como solicitado:
-            setIsSpecialOfferModalOpen(true);
-            // Aqui tem um detalhe técnico: o modal é assíncrono. 
-            // Para não travar o cálculo, vamos deixar ele ver a oferta e o cálculo acontece por trás? 
-            // Ou ele precisa fechar para ver? 
-            // O ideal para conversão é ele ver a oferta ANTES do resultado.
-            // Mas para o MVP, vamos deixar o Modal abrir e o cálculo seguir (User Experience vs Marketing).
-            // SE o usuário pediu "ao tentar usar", vamos abrir e ele decide.
-        }
-
         const success = await incrementUsage();
         if (!success) {
             alert("Erro de conexão. Tente novamente.");
@@ -134,8 +146,7 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
     const handleCommissionCalculate = async () => {
         try {
             if (commissionParams.propertyValue === 0) return alert("Preencha o valor");
-            const authorized = await handleConsumeToken();
-            if (!authorized) return;
+            // Comissão é sempre gratuita — sem verificação de trial
             setCommissionResults(calculateCommission(commissionParams));
             track('calculation', 'commission_calculated', {
                 propertyValue: commissionParams.propertyValue,
@@ -217,9 +228,13 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                 profile={displayProfile}
             />
 
-            <SpecialOfferModal
-                isOpen={isSpecialOfferModalOpen}
-                onClose={() => setIsSpecialOfferModalOpen(false)}
+            <LegacyTrialModal
+                isOpen={showLegacyTrialModal}
+                trialEndDate={legacyTrialEndDate}
+                onConfirm={async () => {
+                    await updateTrialStartedAt();
+                    track('button_click', 'legacy_trial_confirmed', {}, 'LegacyTrialModal');
+                }}
             />
 
             {/* Header */}
@@ -233,10 +248,23 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                     </div>
 
                     <div className="flex items-center gap-3 sm:gap-4">
-                        <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1 ${userPlan === 'plus' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'
+                        <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1 ${
+                            userPlan === 'plus'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : isOnTrial && daysRemaining <= 5
+                                    ? 'bg-amber-100 text-amber-800'
+                                    : isOnTrial
+                                        ? 'bg-gray-100 text-gray-600'
+                                        : 'bg-red-100 text-red-700'
                             }`}>
                             {userPlan === 'plus' && <Crown className="w-3 h-3" />}
-                            {userPlan === 'free' ? `${usageCount}/${usageLimit} Grátis` : 'PLUS'}
+                            {userPlan === 'plus'
+                                ? 'PLUS'
+                                : isOnTrial && daysRemaining > 5
+                                    ? `Trial — ${daysRemaining} dias`
+                                    : isOnTrial
+                                        ? `⚠ ${daysRemaining} dias restantes`
+                                        : 'Trial Expirado'}
                         </div>
 
                         {userPlan !== 'plus' && (
@@ -286,21 +314,27 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                 <div className="flex justify-center mb-6 sm:mb-8 print:hidden">
                     <div className="bg-white p-1.5 rounded-xl border border-gray-200 shadow-sm w-full max-w-md sm:max-w-none sm:w-auto grid grid-cols-2 sm:flex sm:inline-flex gap-2 sm:gap-0">
                         {[
-                            { id: 'financing', icon: Building2, label: 'Financiamento' },
-                            { id: 'commission', icon: Briefcase, label: 'Comissão' },
-                            { id: 'pricing', icon: Tag, label: 'Precificação' },
-                            { id: 'costs', icon: ScrollText, label: 'Custos de Compra' }
+                            { id: 'financing', icon: Building2, label: 'Financiamento', locked: !hasFullAccess },
+                            { id: 'commission', icon: Briefcase, label: 'Comissão', locked: false },
+                            { id: 'pricing', icon: Tag, label: 'Precificação', locked: !hasFullAccess },
+                            { id: 'costs', icon: ScrollText, label: 'Custos de Compra', locked: !hasFullAccess }
                         ].map((tab) => (
                             <button
                                 key={tab.id}
-                                onClick={() => handleTabChange(tab.id as Tab)}
+                                onClick={() => {
+                                    if (tab.locked) { openPricingModal('trial_expired'); return; }
+                                    handleTabChange(tab.id as Tab);
+                                }}
                                 className={`flex items-center justify-center sm:justify-start gap-2 px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${activeTab === tab.id
                                     ? 'bg-emerald-600 text-white shadow-md'
-                                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                                    : tab.locked
+                                        ? 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                                        : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
                                     }`}
                             >
                                 <TabIcon icon={tab.icon} />
                                 {tab.label}
+                                {tab.locked && <Lock className="w-3 h-3 ml-0.5 opacity-60" />}
                             </button>
                         ))}
                     </div>
@@ -314,24 +348,16 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                         results={financingResults}
                         onCalculate={handleFinancingCalculate}
                         onPrint={() => {
-                            if (userPlan !== 'plus') {
-                                if (usageCount >= 3 && usageCount < 5) {
-                                    setIsSpecialOfferModalOpen(true);
-                                } else {
-                                    openPricingModal('feature_blocked');
-                                }
+                            if (!hasFullAccess) {
+                                openPricingModal('trial_expired');
                                 return;
                             }
                             track('button_click', 'print_clicked', { from: 'financing_results' }, 'FinancingTab');
                             window.print();
                         }}
                         onShare={(text) => {
-                            if (userPlan !== 'plus') {
-                                if (usageCount >= 3 && usageCount < 5) {
-                                    setIsSpecialOfferModalOpen(true);
-                                } else {
-                                    openPricingModal('feature_blocked');
-                                }
+                            if (!hasFullAccess) {
+                                openPricingModal('trial_expired');
                                 return;
                             }
                             track('button_click', 'whatsapp_share_clicked', { from: 'financing_results' }, 'FinancingTab');

@@ -82,7 +82,9 @@ export default function LegalPage() {
 
                             <h3 className="font-semibold text-gray-900 mt-4">2.3. Planos e Pagamentos</h3>
                             <p>
-                                O Plano Free é limitado a 5 simulações mensais. O Plano Plus oferece uso ilimitado mediante assinatura anual.
+                                Novos usuários têm acesso completo e gratuito por <strong>30 dias</strong> a partir do cadastro, sem necessidade de cartão de crédito.
+                                Após esse período, o cálculo de <strong>Comissão permanece gratuito</strong> para sempre.
+                                As demais ferramentas (Financiamento, Precificação e Custos de Compra) requerem o Plano Plus mediante assinatura anual.
                                 O cancelamento pode ser feito a qualquer momento, interrompendo a renovação automática para o período seguinte.
                             </p>
                         </section>
