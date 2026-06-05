@@ -113,9 +113,13 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
             openPricingModal('trial_expired');
             return false;
         }
-        const success = await incrementUsage();
-        if (!success) {
-            alert("Erro de conexão. Tente novamente.");
+        const result = await incrementUsage();
+        if (!result.success) {
+            if (result.limitReached) {
+                openPricingModal('limit_reached');
+            } else {
+                alert("Erro de conexão. Tente novamente.");
+            }
             return false;
         }
         return true;

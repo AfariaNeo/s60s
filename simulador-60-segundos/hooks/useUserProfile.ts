@@ -143,8 +143,8 @@ export function useUserProfile(user: User | null) {
         fetchProfile();
     }, [user]);
 
-    const incrementUsage = async (): Promise<boolean> => {
-        if (!user) return false;
+    const incrementUsage = async (): Promise<{ success: boolean; limitReached: boolean }> => {
+        if (!user) return { success: false, limitReached: false };
 
         try {
             // 1. Fetch fresh profile data to prevent race conditions
@@ -156,7 +156,7 @@ export function useUserProfile(user: User | null) {
 
             if (fetchError || !freshProfile) {
                 console.error('Error fetching fresh profile for usage check:', fetchError);
-                return false;
+                return { success: false, limitReached: false };
             }
 
             const currentUsage = freshProfile.usage_count;
@@ -170,7 +170,7 @@ export function useUserProfile(user: User | null) {
                 if (profile) {
                     setProfile({ ...profile, usageCount: currentUsage });
                 }
-                return false;
+                return { success: false, limitReached: true };
             }
 
             // 3. Increment
@@ -182,7 +182,7 @@ export function useUserProfile(user: User | null) {
 
             if (updateError) {
                 console.error('Error incrementing usage:', updateError);
-                return false;
+                return { success: false, limitReached: false };
             }
 
             // 4. Update local state
@@ -190,11 +190,11 @@ export function useUserProfile(user: User | null) {
                 setProfile({ ...profile, usageCount: newCount });
             }
 
-            return true;
+            return { success: true, limitReached: false };
 
         } catch (err) {
             console.error('Unexpected error in incrementUsage:', err);
-            return false;
+            return { success: false, limitReached: false };
         }
     };
 
