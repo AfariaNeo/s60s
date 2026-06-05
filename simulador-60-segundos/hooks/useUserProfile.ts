@@ -160,18 +160,6 @@ export function useUserProfile(user: User | null) {
             }
 
             const currentUsage = freshProfile.usage_count;
-            const currentPlan = freshProfile.plan as UserPlan;
-
-            // 2. Check Limit Server-Side
-            const USAGE_LIMIT = 5;
-
-            if (currentPlan !== 'plus' && currentUsage >= USAGE_LIMIT) {
-                // Limit reached
-                if (profile) {
-                    setProfile({ ...profile, usageCount: currentUsage });
-                }
-                return { success: false, limitReached: true };
-            }
 
             // 3. Increment
             const newCount = currentUsage + 1;
