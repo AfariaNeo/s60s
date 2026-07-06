@@ -41,7 +41,7 @@ const LegacyTrialModal: React.FC<LegacyTrialModalProps> = ({ isOpen, onConfirm, 
           <div className="flex items-start gap-3">
             <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
             <p className="text-sm text-gray-700">
-              Você tem <strong>acesso completo e ilimitado</strong> por 30 dias a partir de hoje.
+              Você tem <strong>acesso completo e ilimitado</strong> por 7 dias a partir de hoje.
             </p>
           </div>
           <div className="flex items-start gap-3">

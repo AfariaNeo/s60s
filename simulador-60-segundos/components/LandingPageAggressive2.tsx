@@ -42,9 +42,13 @@ export default function LandingPageAggressive2() {
         <div className="min-h-screen bg-[#00A3C4] font-sans text-white overflow-x-hidden selection:bg-white/20">
             {/* --- HEADER --- */}
             <header className="w-full px-6 py-6 md:px-12 flex justify-between items-center max-w-7xl mx-auto z-50 relative">
-                <div className="flex items-center gap-2">
-                    <Zap className="w-8 h-8 fill-black text-black" />
-                    <span className="text-xl font-bold tracking-tight uppercase">60sec <span className="font-light">SIMULADOR</span></span>
+                <div className="flex items-center gap-3">
+                    <img
+                        src="/images/Logo_bco.png"
+                        alt="Logo Simulador 60 Segundos"
+                        className="h-10 w-auto object-contain"
+                    />
+                    <span className="text-xl font-bold tracking-tight uppercase hidden sm:inline">60sec <span className="font-light">SIMULADOR</span></span>
                 </div>
 
                 <nav className="hidden md:flex items-center gap-8 text-sm font-semibold">

@@ -132,7 +132,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
             <h3 className="font-bold text-xl">Gratuito</h3>
             <p className="text-2xl font-bold mt-2">R$ 0</p>
             <ul className="mt-4 space-y-2 text-sm text-gray-600">
-              <li>✓ 30 dias grátis, sem cartão</li>
+              <li>✓ 7 dias grátis, sem cartão</li>
               <li>✓ Comissão sempre gratuita</li>
             </ul>
             <button disabled className="w-full mt-6 py-2 bg-gray-200 text-gray-500 rounded cursor-not-allowed">Plano Atual</button>

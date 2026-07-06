@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calculator, Crown, LogOut, Building2, Briefcase, Tag, ScrollText, User as UserIcon, Lock } from 'lucide-react';
+import { Crown, LogOut, Building2, Briefcase, Tag, ScrollText, User as UserIcon, Lock } from 'lucide-react';
 import { CommissionParams, CommissionResult, PricingParams, PricingResult, PurchaseCostParams, PurchaseCostResult, UserPlan } from '../types';
 import { calculateCommission, calculatePricing, calculatePurchaseCosts, formatCurrency } from '../utils/finance';
 import PricingModal from './PricingModal';
@@ -41,7 +41,7 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
     const now = new Date();
     const profileCreatedAt = profile?.createdAt ? new Date(profile.createdAt) : null;
     const isLegacyUser = profileCreatedAt ? profileCreatedAt <= ACTIVATION_DATE : false;
-    const TRIAL_DAYS = 30;
+    const TRIAL_DAYS = 7;
 
     let daysRemaining = 0;
     let isOnTrial = false;
@@ -244,10 +244,12 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
             {/* Header */}
             <header className="bg-white border-b border-gray-200 sticky top-0 z-30 print:hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <div className="bg-emerald-600 p-2 rounded-lg">
-                            <Calculator className="w-5 h-5 text-white" />
-                        </div>
+                    <div className="flex items-center gap-3">
+                        <img
+                            src="/images/Logo_verde.png"
+                            alt="Logo Simulador 60 Segundos"
+                            className="h-10 w-auto object-contain"
+                        />
                         <h1 className="text-xl font-bold text-gray-900 tracking-tight hidden sm:block">Simulador 60 Segundos</h1>
                     </div>
 

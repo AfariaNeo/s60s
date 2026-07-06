@@ -20,11 +20,13 @@ export default function LandingPage() {
             <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
-                        <div className="flex items-center gap-2">
-                            <div className="bg-emerald-600 p-2 rounded-lg">
-                                <Calculator className="w-6 h-6 text-white" />
-                            </div>
-                            <span className="text-xl font-bold tracking-tight">Simulador 60 Segundos</span>
+                        <div className="flex items-center gap-3">
+                            <img
+                                src="/images/Logo_verde.png"
+                                alt="Logo Simulador 60 Segundos"
+                                className="h-10 w-auto object-contain"
+                            />
+                            <span className="text-xl font-bold tracking-tight hidden sm:inline">Simulador 60 Segundos</span>
                         </div>
 
                         {/* Desktop Nav */}
@@ -209,7 +211,7 @@ export default function LandingPage() {
                             </div>
                             <p className="text-gray-500 mb-6 text-sm">Para quem está começando a organizar a carteira.</p>
                             <ul className="space-y-4 mb-8 text-left">
-                                <PricingCheck text="30 dias grátis, sem cartão" />
+                                <PricingCheck text="7 dias grátis, sem cartão" />
                                 <PricingCheck text="Comissão sempre gratuita" />
                                 <PricingCheck text="Acesso a todas as ferramentas no trial" />
                             </ul>
@@ -270,9 +272,13 @@ export default function LandingPage() {
             <footer className="bg-gray-900 text-gray-400 py-12 border-t border-gray-800">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-4 gap-8">
                     <div className="col-span-1 md:col-span-2">
-                        <div className="flex items-center gap-2 mb-4">
-                            <Calculator className="w-6 h-6 text-emerald-500" />
-                            <span className="text-xl font-bold text-white">Simulador 60 Segundos</span>
+                        <div className="flex items-center gap-3 mb-4">
+                            <img
+                                src="/images/Logo_bco.png"
+                                alt="Logo Simulador 60 Segundos"
+                                className="h-10 w-auto object-contain"
+                            />
+                            <span className="text-xl font-bold text-white hidden sm:inline">Simulador 60 Segundos</span>
                         </div>
                         <p className="max-w-xs text-sm">
                             Tecnologia para o mercado imobiliário. Feito para corretores que valorizam o tempo e a precisão.

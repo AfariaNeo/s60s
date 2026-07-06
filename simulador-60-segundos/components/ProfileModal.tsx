@@ -21,7 +21,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, profile })
   const now = new Date();
   const profileCreatedAt = profile?.createdAt ? new Date(profile.createdAt) : null;
   const isLegacyUser = profileCreatedAt ? profileCreatedAt <= ACTIVATION_DATE : false;
-  const TRIAL_DAYS = 30;
+  const TRIAL_DAYS = 7;
 
   let daysRemaining = 0;
   let isOnTrial = false;

@@ -35,11 +35,13 @@ export default function LandingPageAggressive() {
             {/* --- FLOATING HEADER --- */}
             <header className="fixed top-0 w-full z-50 px-4 pt-4">
                 <div className="max-w-7xl mx-auto bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl px-6 py-4 flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                        <div className="bg-emerald-500 p-1.5 rounded-lg">
-                            <Zap className="w-5 h-5 text-black fill-black" />
-                        </div>
-                        <span className="text-lg font-bold tracking-tight text-white">60sec <span className="text-emerald-500">PRO</span></span>
+                    <div className="flex items-center gap-3">
+                        <img
+                            src="/images/Logo_bco.png"
+                            alt="Logo Simulador 60 Segundos"
+                            className="h-10 w-auto object-contain"
+                        />
+                        <span className="text-lg font-bold tracking-tight text-white hidden sm:inline">60sec <span className="text-emerald-500">PRO</span></span>
                     </div>
 
                     <nav className="hidden md:flex items-center gap-6">
