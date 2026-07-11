@@ -234,7 +234,7 @@ export default function CommissionTab({
                                     <Percent className="w-4 h-4" />
                                     <span className="font-bold">{params.agentSharePercent}%</span>
                                     <span className="opacity-80">
-                                        ({params.calculationMode === 'percentage_of_total' ? 'do Valor Venda' : 'da Comissão'})
+                                        ({params.calculationMode === 'percentage_of_total' ? 'da Comissão' : 'do Valor Venda'})
                                     </span>
                                 </div>
                             </div>
