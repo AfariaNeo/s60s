@@ -80,12 +80,16 @@ export function useUserProfile(user: User | null) {
 
                     const currentProfile: UserProfile = {
                         ...data,
+                        id: rawData.id ?? user.id,
                         plan: activePlan,
                         usageCount: rawData.usage_count ?? 0,
                         lastResetDate: rawData.last_reset_date,
                         subscriptionEndDate: rawData.subscription_end_date,
                         trialStartedAt: rawData.trial_started_at ?? undefined,
                         createdAt: rawData.created_at ?? undefined,
+                        phone: rawData.phone ?? undefined,
+                        creciNumber: rawData.creci_number ?? undefined,
+                        creciState: rawData.creci_state ?? undefined,
                         name: resolvedName,
                         email: rawData.email || ''
                     } as UserProfile;
@@ -142,6 +146,53 @@ export function useUserProfile(user: User | null) {
 
         fetchProfile();
     }, [user]);
+
+    const updateProfile = async (updates: Partial<UserProfile>): Promise<boolean> => {
+        if (!user) return false;
+
+        try {
+            const payload = {
+                phone: updates.phone ?? null,
+                creci_number: updates.creciNumber ?? null,
+                creci_state: updates.creciState ?? null,
+                name: updates.name ?? null,
+                email: updates.email ?? null,
+                updated_at: new Date().toISOString(),
+            };
+
+            const { data, error } = await supabase
+                .from('profiles')
+                .update(payload)
+                .eq('id', user.id)
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            const rawData = data as any;
+            const nextProfile: UserProfile = {
+                ...profile,
+                id: rawData.id ?? user.id,
+                name: rawData.name || profile?.name || user.email || 'Usuário',
+                email: rawData.email || user.email || '',
+                phone: rawData.phone ?? undefined,
+                creciNumber: rawData.creci_number ?? undefined,
+                creciState: rawData.creci_state ?? undefined,
+                plan: profile?.plan || 'free',
+                usageCount: rawData.usage_count ?? profile?.usageCount ?? 0,
+                lastResetDate: rawData.last_reset_date ?? profile?.lastResetDate,
+                subscriptionEndDate: rawData.subscription_end_date ?? profile?.subscriptionEndDate,
+                trialStartedAt: rawData.trial_started_at ?? profile?.trialStartedAt,
+                createdAt: rawData.created_at ?? profile?.createdAt,
+            };
+
+            setProfile(nextProfile);
+            return true;
+        } catch (err) {
+            console.error('Error updating profile:', err);
+            return false;
+        }
+    };
 
     const incrementUsage = async (): Promise<{ success: boolean; limitReached: boolean }> => {
         if (!user) return { success: false, limitReached: false };
@@ -212,5 +263,5 @@ export function useUserProfile(user: User | null) {
         }
     };
 
-    return { profile, loading, incrementUsage, updateTrialStartedAt };
+    return { profile, loading, incrementUsage, updateTrialStartedAt, updateProfile };
 }

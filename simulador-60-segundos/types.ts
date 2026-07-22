@@ -84,11 +84,15 @@ export interface PurchaseCostResult {
 export type UserPlan = 'free' | 'plus';
 
 export interface UserProfile {
+  id?: string;
   name: string;
   email: string;
   plan: UserPlan;
-  cpf?: string; 
-  usageCount: number; 
+  cpf?: string;
+  phone?: string;
+  creciNumber?: string;
+  creciState?: string;
+  usageCount: number;
   lastResetDate?: string;
   subscriptionEndDate?: string; // Data ISO do fim da assinatura
   billingCycle?: 'monthly' | 'annual';

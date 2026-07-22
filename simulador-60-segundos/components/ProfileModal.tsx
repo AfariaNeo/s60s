@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, User, Shield, CreditCard, RotateCcw, Crown, KeyRound, Calendar, MinusCircle, HelpCircle } from 'lucide-react';
+import { X, User, Shield, CreditCard, RotateCcw, Crown, KeyRound, Calendar, MinusCircle, HelpCircle, Phone, BadgeCheck } from 'lucide-react';
 import { UserProfile } from '../types';
 import { supabase } from '../lib/supabaseClient';
 
@@ -7,12 +7,17 @@ interface ProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
   profile: UserProfile | null;
+  onProfileUpdate?: (updates: Partial<UserProfile>) => Promise<boolean>;
 }
 
-const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, profile }) => {
-  const [isResetting, setIsResetting] = useState(false); // Renamed from resetLoading to match snippet
-  const [message, setMessage] = useState<string | null>(null); // Kept for potential future use, though snippet uses alerts
-  const [isCancelling, setIsCancelling] = useState(false); // New state for cancellation
+const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, profile, onProfileUpdate }) => {
+  const [isResetting, setIsResetting] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [phone, setPhone] = useState(profile?.phone || '');
+  const [creciNumber, setCreciNumber] = useState(profile?.creciNumber || '');
+  const [creciState, setCreciState] = useState(profile?.creciState || '');
+  const [isSaving, setIsSaving] = useState(false);
 
   if (!isOpen || !profile) return null;
 
@@ -85,6 +90,29 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, profile })
       alert("Erro ao processar o cancelamento. Tente novamente mais tarde.");
     } finally {
       setIsCancelling(false);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!onProfileUpdate) return;
+
+    setIsSaving(true);
+    try {
+      const success = await onProfileUpdate({
+        phone: phone.trim() || undefined,
+        creciNumber: creciNumber.trim() || undefined,
+        creciState: creciState.trim().toUpperCase() || undefined,
+      });
+
+      if (success) {
+        setMessage('Dados do perfil atualizados com sucesso.');
+        alert('Dados do perfil atualizados com sucesso.');
+      } else {
+        setMessage('Não foi possível salvar os dados do perfil.');
+        alert('Não foi possível salvar os dados do perfil.');
+      }
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -172,6 +200,46 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, profile })
               </div>
             </div>
           )}
+
+          <div className="space-y-3 rounded-xl bg-gray-50 p-4 border border-gray-100">
+            <div className="flex items-center gap-2 text-sm font-bold text-gray-800">
+              <Phone className="w-4 h-4 text-emerald-600" />
+              Dados de Contato
+            </div>
+
+            <label className="block text-xs font-medium text-gray-700">Telefone (opcional)</label>
+            <input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="(11) 99999-9999"
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+            />
+
+            <label className="block text-xs font-medium text-gray-700">CRECI</label>
+            <input
+              value={creciNumber}
+              onChange={(e) => setCreciNumber(e.target.value)}
+              placeholder="Número do CRECI"
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+            />
+
+            <label className="block text-xs font-medium text-gray-700">UF do CRECI</label>
+            <input
+              value={creciState}
+              onChange={(e) => setCreciState(e.target.value.toUpperCase())}
+              placeholder="SP"
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+            />
+
+            <button
+              onClick={handleSaveProfile}
+              disabled={isSaving}
+              className="w-full py-2.5 px-4 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <BadgeCheck className="w-4 h-4" />
+              {isSaving ? 'Salvando...' : 'Salvar Perfil'}
+            </button>
+          </div>
 
           <div className="pt-4 border-t border-gray-100 flex flex-col gap-3">
             <button

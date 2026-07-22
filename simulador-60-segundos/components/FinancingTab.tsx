@@ -8,6 +8,7 @@ interface FinancingTabProps {
     params: SimulationParams;
     setParams: React.Dispatch<React.SetStateAction<SimulationParams>>;
     results: ComparisonResult | null;
+    profile?: any;
     onCalculate: () => void;
     // aiAnalysis: string; // Future
     // loadingAnalysis: boolean; // Future
@@ -20,6 +21,7 @@ export default function FinancingTab({
     params,
     setParams,
     results,
+    profile,
     onCalculate,
     // aiAnalysis, // Future
     // loadingAnalysis, // Future
@@ -79,7 +81,13 @@ export default function FinancingTab({
         if (!results) return '';
         const sac = results.sac;
         const price = results.price;
+        const agentName = profile?.name || 'Corretor';
+        const creciText = profile?.creciNumber && profile?.creciState
+            ? `\n🧾 *CRECI:* ${profile.creciNumber} / ${profile.creciState}`
+            : '';
+
         return `*Simulação de Financiamento*\n\n` +
+            `👤 *Corretor:* ${agentName}${creciText}\n` +
             `💰 *Imóvel:* ${formatCurrency(params.propertyValue)}\n` +
             `📉 *Entrada:* ${params.downPaymentPercent}% (${formatCurrency(params.propertyValue * params.downPaymentPercent / 100)})\n` +
             `📅 *Prazo:* ${params.months} meses\n` +

@@ -18,8 +18,13 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
   const { track } = useAnalytics();
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
   const [isLoading, setIsLoading] = useState(false);
+  const [isPromoValidating, setIsPromoValidating] = useState(false);
   const [cpf, setCpf] = useState('');
   const [promoCode, setPromoCode] = useState('');
+  const [promoValidationMessage, setPromoValidationMessage] = useState('');
+  const [promoValidationSuccess, setPromoValidationSuccess] = useState(false);
+  const [previewDiscountValue, setPreviewDiscountValue] = useState<number | null>(null);
+  const [previewFinalPrice, setPreviewFinalPrice] = useState<number | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -34,6 +39,66 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
       .replace(/(\d{3})(\d)/, '$1.$2')
       .replace(/(\d{3})(\d{1,2})/, '$1-$2')
       .replace(/(-\d{2})\d+?$/, '$1');
+  };
+
+  const validatePromoCode = async () => {
+    const normalizedPromoCode = promoCode.trim().toUpperCase();
+
+    if (!normalizedPromoCode) {
+      setPromoValidationMessage('Digite um código promocional para validar.');
+      setPromoValidationSuccess(false);
+      setPreviewDiscountValue(null);
+      setPreviewFinalPrice(null);
+      return;
+    }
+
+    setIsPromoValidating(true);
+    setPromoValidationMessage('');
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) {
+        setPromoValidationMessage('Sessão expirada. Faça login novamente.');
+        setPromoValidationSuccess(false);
+        setPreviewDiscountValue(null);
+        setPreviewFinalPrice(null);
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('validate-promo-code', {
+        body: {
+          billingCycle: 'annual',
+          couponCode: normalizedPromoCode,
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data?.valid) {
+        setPromoValidationMessage(data?.message || 'Código promocional inválido.');
+        setPromoValidationSuccess(false);
+        setPreviewDiscountValue(null);
+        setPreviewFinalPrice(null);
+        return;
+      }
+
+      setPromoValidationMessage(`Código aplicado com sucesso. Novo valor: R$ ${data.finalPrice.toFixed(2).replace('.', ',')}.`);
+      setPromoValidationSuccess(true);
+      setPreviewDiscountValue(data.discountValue);
+      setPreviewFinalPrice(data.finalPrice);
+    } catch (err) {
+      console.error(err);
+      setPromoValidationSuccess(false);
+      setPromoValidationMessage('Não foi possível validar o código promocional no momento.');
+      setPreviewDiscountValue(null);
+      setPreviewFinalPrice(null);
+    } finally {
+      setIsPromoValidating(false);
+    }
   };
 
   const handleSubscribe = async (plan: UserPlan, cycle: 'monthly' | 'annual') => {
@@ -58,6 +123,11 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
       }
 
       const normalizedPromoCode = promoCode.trim().toUpperCase();
+
+      if (normalizedPromoCode && !promoValidationSuccess) {
+        alert('Valide o código promocional antes de prosseguir com a assinatura.');
+        return;
+      }
 
       // Revert to default behavior: supabase-js automatically attaches Auth header
       const { data, error } = await supabase.functions.invoke('create-payment', {
@@ -171,13 +241,41 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
 
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Código Promocional</label>
-              <input
-                type="text"
-                placeholder="Digite seu código"
-                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                value={promoCode}
-                onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Digite seu código"
+                  className="flex-1 border border-gray-300 rounded px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  value={promoCode}
+                  onChange={(e) => {
+                    setPromoCode(e.target.value.toUpperCase());
+                    setPromoValidationMessage('');
+                    setPromoValidationSuccess(false);
+                    setPreviewDiscountValue(null);
+                    setPreviewFinalPrice(null);
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={validatePromoCode}
+                  disabled={isPromoValidating || !promoCode.trim()}
+                  className="px-3 py-2 text-sm font-bold rounded bg-slate-900 text-white hover:bg-slate-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isPromoValidating ? 'Validando...' : 'Validar'}
+                </button>
+              </div>
+
+              {promoValidationMessage && (
+                <p className={`mt-2 text-sm ${promoValidationSuccess ? 'text-emerald-600' : 'text-red-600'}`}>
+                  {promoValidationMessage}
+                </p>
+              )}
+
+              {previewFinalPrice !== null && (
+                <div className="mt-2 rounded bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm text-emerald-700">
+                  Valor com desconto: <span className="font-bold">R$ {previewFinalPrice.toFixed(2).replace('.', ',')}</span>
+                </div>
+              )}
             </div>
 
             <button

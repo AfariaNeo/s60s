@@ -24,7 +24,7 @@ interface DashboardProps {
 export default function Dashboard({ user, signOut }: DashboardProps) {
     const { track } = useAnalytics();
     // --- AUTH & PROFILE ---
-    const { profile, loading: loadingProfile, incrementUsage, updateTrialStartedAt } = useUserProfile(user);
+    const { profile, loading: loadingProfile, incrementUsage, updateTrialStartedAt, updateProfile } = useUserProfile(user);
 
     // Fallback while loading or if error
     const userPlan: UserPlan = profile?.plan || 'free';
@@ -230,6 +230,7 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                 isOpen={isProfileModalOpen}
                 onClose={() => setIsProfileModalOpen(false)}
                 profile={displayProfile}
+                onProfileUpdate={updateProfile}
             />
 
             <LegacyTrialModal
@@ -352,6 +353,7 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                         params={financingParams}
                         setParams={setFinancingParams}
                         results={financingResults}
+                        profile={displayProfile}
                         onCalculate={handleFinancingCalculate}
                         onPrint={() => {
                             if (!hasFullAccess) {
