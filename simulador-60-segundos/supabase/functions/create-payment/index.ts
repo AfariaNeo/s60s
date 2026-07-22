@@ -107,7 +107,7 @@ Deno.serve(async (req: Request) => {
             if (isDev) console.error("JSON Parse Error:", e);
         }
 
-        const { billingCycle, cpf, discountValue } = body;
+        const { billingCycle, cpf, discountValue, couponCode } = body;
 
         if (!asaasKey) {
             throw new Error("Missing Asaas API Key Configuration");
@@ -167,11 +167,65 @@ Deno.serve(async (req: Request) => {
         let value = billingCycle === 'annual' ? 99.00 : 9.90;
         const description = billingCycle === 'annual' ? 'Simulador 60s (Assinatura Anual)' : 'Simulador 60s (Mensal)';
         const cycle = billingCycle === 'annual' ? 'YEARLY' : 'MONTHLY';
+        const normalizedCouponCode = typeof couponCode === 'string' ? couponCode.trim().toUpperCase() : '';
+        let directDiscountValue = typeof discountValue === 'number' ? discountValue : Number(discountValue || 0);
 
-        // Aplicar desconto direto no valor da assinatura se houver
-        if (discountValue && discountValue > 0) {
-            value = Math.max(0, value - discountValue);
-            console.log(`Creating subscription with direct discounted value: ${value}`);
+        // Validar código promocional individual no Supabase (se informado)
+        let promoCodeRecord: { code: string; discount_percent: number; status: string; user_id?: string; email?: string } | null = null;
+        if (normalizedCouponCode) {
+            const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+            if (!serviceRoleKey) {
+                throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY to validate promo code.');
+            }
+
+            const adminSupabase = createClient(supabaseUrl, serviceRoleKey);
+            const { data: promoData, error: promoError } = await adminSupabase
+                .from('promo_codes')
+                .select('code, discount_percent, status, user_id, email')
+                .eq('code', normalizedCouponCode)
+                .maybeSingle();
+
+            if (promoError) {
+                throw new Error(`Promo code lookup failed: ${promoError.message}`);
+            }
+
+            promoCodeRecord = promoData;
+            if (!promoCodeRecord) {
+                throw new Error('Código promocional inválido.');
+            }
+
+            if (promoCodeRecord.status !== 'approved') {
+                throw new Error('Código promocional não está ativo para uso.');
+            }
+
+            if (promoCodeRecord.user_id && promoCodeRecord.user_id !== user.id) {
+                throw new Error('Este código promocional não pertence a este usuário.');
+            }
+
+            if (promoCodeRecord.email && promoCodeRecord.email.toLowerCase() !== user.email?.toLowerCase()) {
+                throw new Error('Este código promocional não pertence a este e-mail.');
+            }
+
+            if (promoCodeRecord.discount_percent > 0) {
+                const couponDiscountValue = value * (promoCodeRecord.discount_percent / 100);
+                directDiscountValue += couponDiscountValue;
+                console.log(`Applying coupon ${normalizedCouponCode} with ${promoCodeRecord.discount_percent}% discount`);
+            }
+
+            const { error: markError } = await adminSupabase
+                .from('promo_codes')
+                .update({ status: 'used', used_at: new Date().toISOString() })
+                .eq('code', normalizedCouponCode);
+
+            if (markError) {
+                throw new Error(`Failed to mark promo code as used: ${markError.message}`);
+            }
+        }
+
+        // Aplicar descontos no valor da assinatura se houver
+        if (directDiscountValue > 0) {
+            value = Math.max(0, value - directDiscountValue);
+            console.log(`Creating subscription with discounted value: ${value}`);
         }
 
         // Create Subscription object

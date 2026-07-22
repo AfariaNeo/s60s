@@ -19,6 +19,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
   const [isLoading, setIsLoading] = useState(false);
   const [cpf, setCpf] = useState('');
+  const [promoCode, setPromoCode] = useState('');
 
   useEffect(() => {
     if (isOpen) {
@@ -56,9 +57,15 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
         return;
       }
 
+      const normalizedPromoCode = promoCode.trim().toUpperCase();
+
       // Revert to default behavior: supabase-js automatically attaches Auth header
       const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: { billingCycle: cycle, cpf: cpf.replace(/\D/g, '') } // Sending CPF again
+        body: {
+          billingCycle: cycle,
+          cpf: cpf.replace(/\D/g, ''),
+          couponCode: normalizedPromoCode || undefined,
+        }
       });
 
       if (error) {
@@ -159,6 +166,17 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
                 value={cpf}
                 onChange={(e) => setCpf(formatCPF(e.target.value))}
                 maxLength={14}
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Código Promocional</label>
+              <input
+                type="text"
+                placeholder="Digite seu código"
+                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                value={promoCode}
+                onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
               />
             </div>
 
