@@ -74,8 +74,12 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
         }
       });
 
-      if (error) {
-        throw error;
+      if (error && !data?.valid) {
+        setPromoValidationMessage((error as Error)?.message || 'Não foi possível validar o código promocional no momento.');
+        setPromoValidationSuccess(false);
+        setPreviewDiscountValue(null);
+        setPreviewFinalPrice(null);
+        return;
       }
 
       if (!data?.valid) {
@@ -135,6 +139,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
           billingCycle: cycle,
           cpf: cpf.replace(/\D/g, ''),
           couponCode: normalizedPromoCode || undefined,
+          discountValue: previewDiscountValue ?? undefined,
         }
       });
 

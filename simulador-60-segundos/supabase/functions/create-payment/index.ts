@@ -109,6 +109,15 @@ Deno.serve(async (req: Request) => {
 
         const { billingCycle, cpf, discountValue, couponCode } = body;
 
+        console.log('create-payment request body:', {
+            billingCycle,
+            cpf,
+            discountValue,
+            couponCode,
+            hasAsaasKey: !!asaasKey,
+            hasSupabaseServiceRole: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+        });
+
         if (!asaasKey) {
             throw new Error("Missing Asaas API Key Configuration");
         }
@@ -164,15 +173,21 @@ Deno.serve(async (req: Request) => {
         }
 
         // --- SUBSCRIPTION CREATION (RECURRING) ---
-        let value = billingCycle === 'annual' ? 99.00 : 9.90;
+        const baseValue = billingCycle === 'annual' ? 99.00 : 9.90;
         const description = billingCycle === 'annual' ? 'Simulador 60s (Assinatura Anual)' : 'Simulador 60s (Mensal)';
         const cycle = billingCycle === 'annual' ? 'YEARLY' : 'MONTHLY';
         const normalizedCouponCode = typeof couponCode === 'string' ? couponCode.trim().toUpperCase() : '';
-        let directDiscountValue = typeof discountValue === 'number' ? discountValue : Number(discountValue || 0);
+        const previewDiscountValue = typeof discountValue === 'number' ? discountValue : Number(discountValue || 0);
+        let value = baseValue;
+
+        if (previewDiscountValue > 0) {
+            value = Math.max(0, baseValue - previewDiscountValue);
+            console.log(`Using preview discount value: ${previewDiscountValue}. Final value: ${value}`);
+        }
 
         // Validar código promocional individual no Supabase (se informado)
         let promoCodeRecord: { code: string; discount_percent: number; status: string; user_id?: string; email?: string } | null = null;
-        if (normalizedCouponCode) {
+        if (normalizedCouponCode && previewDiscountValue === 0) {
             const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
             if (!serviceRoleKey) {
                 throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY to validate promo code.');
@@ -207,8 +222,8 @@ Deno.serve(async (req: Request) => {
             }
 
             if (promoCodeRecord.discount_percent > 0) {
-                const couponDiscountValue = value * (promoCodeRecord.discount_percent / 100);
-                directDiscountValue += couponDiscountValue;
+                const couponDiscountValue = baseValue * (promoCodeRecord.discount_percent / 100);
+                value = Math.max(0, baseValue - couponDiscountValue);
                 console.log(`Applying coupon ${normalizedCouponCode} with ${promoCodeRecord.discount_percent}% discount`);
             }
 
@@ -222,22 +237,22 @@ Deno.serve(async (req: Request) => {
             }
         }
 
-        // Aplicar descontos no valor da assinatura se houver
-        if (directDiscountValue > 0) {
-            value = Math.max(0, value - directDiscountValue);
-            console.log(`Creating subscription with discounted value: ${value}`);
-        }
+        console.log(`Computed final subscription value: ${value}`);
+
+        const nextDueDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
         // Create Subscription object
         const subscriptionBody: any = {
             customer: customerId,
-            billingType: 'UNDEFINED',
+            billingType: 'CREDIT_CARD',
             value,
-            nextDueDate: new Date(Date.now() + 10 * 60 * 1000).toISOString().split('T')[0],
+            nextDueDate: nextDueDate.toISOString().split('T')[0],
             cycle,
             description,
             externalReference: user.id
         };
+
+        console.log('Sending subscription body to Asaas:', subscriptionBody);
 
         const subscriptionResp = await fetch(`${ASAAS_API_URL}/subscriptions`, {
             method: 'POST',

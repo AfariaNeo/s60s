@@ -41,7 +41,7 @@ Deno.serve(async (req: Request) => {
     if (!couponCode) {
       return new Response(
         JSON.stringify({ valid: false, message: 'Informe um código promocional.' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       )
     }
 
@@ -59,7 +59,7 @@ Deno.serve(async (req: Request) => {
     if (!promoData) {
       return new Response(
         JSON.stringify({ valid: false, message: 'Código promocional inválido.' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       )
     }
 
@@ -68,28 +68,28 @@ Deno.serve(async (req: Request) => {
     if (promoData.status !== 'approved') {
       return new Response(
         JSON.stringify({ valid: false, message: 'Código promocional não está ativo.' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       )
     }
 
     if (expiresAt && expiresAt < now) {
       return new Response(
         JSON.stringify({ valid: false, message: 'Código promocional expirado.' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       )
     }
 
     if (promoData.user_id && promoData.user_id !== user.id) {
       return new Response(
         JSON.stringify({ valid: false, message: 'Este código promocional não pertence a este usuário.' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       )
     }
 
     if (promoData.email && promoData.email.toLowerCase() !== user.email?.toLowerCase()) {
       return new Response(
         JSON.stringify({ valid: false, message: 'Este código promocional não pertence a este e-mail.' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       )
     }
 
