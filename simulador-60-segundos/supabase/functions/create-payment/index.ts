@@ -23,18 +23,19 @@ const checkRateLimit = (clientIp: string): boolean => {
     return false;
 };
 
-// CORS restrictivo: apenas seu domínio (substituir com o domínio real em produção)
+// CORS permissivo para o fluxo do checkout, mantendo a mesma origem do navegador e permitindo produção.
 const ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://localhost:5173',
-    Deno.env.get('VITE_APP_URL') || 'https://seu-dominio.com'
-];
+    Deno.env.get('VITE_APP_URL') || '',
+].filter(Boolean);
 
 const getCorsHeaders = (origin?: string) => {
-    const allowedOrigin = ALLOWED_ORIGINS.includes(origin || '') ? origin : '';
+    const hasAllowedOrigin = origin && ALLOWED_ORIGINS.includes(origin);
     return {
-        'Access-Control-Allow-Origin': allowedOrigin,
+        'Access-Control-Allow-Origin': hasAllowedOrigin ? origin : '*',
         'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     };
 }
 

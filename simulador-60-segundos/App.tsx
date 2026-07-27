@@ -6,7 +6,8 @@ import Dashboard from './components/Dashboard';
 import { useAuth } from './hooks/useAuth';
 import { AnalyticsTracker, initGA } from './components/AnalyticsTracker';
 import { AdminDashboard } from './components/AdminDashboard';
-import LandingPage from './components/LandingPage';
+import LandingPage from './components/LandingPage'; // LP original — desconectada da rota "/", ver comentário abaixo
+import LandingPageNoBrain from './components/LandingPageNoBrain'; // LP nova (modelo nobrain) — ativa na rota "/"
 import LegalPage from './components/LegalPage';
 import LandingPageAggressive from './components/LandingPageAggressive';
 import LandingPageAggressive2 from './components/LandingPageAggressive2';
@@ -64,7 +65,9 @@ export default function SimulatorApp() {
         />
         <Route
           path="/"
-          element={user ? <Dashboard user={user} signOut={signOut} /> : <LandingPage />}
+          // LP nova (nobrain) ativa. Para reativar a LP original, troque a linha abaixo por:
+          // element={user ? <Dashboard user={user} signOut={signOut} /> : <LandingPage />}
+          element={user ? <Dashboard user={user} signOut={signOut} /> : <LandingPageNoBrain />}
         />
         {/* Redirect unknown routes to home */}
         <Route path="*" element={<Navigate to="/" />} />
