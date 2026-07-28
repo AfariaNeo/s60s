@@ -103,6 +103,13 @@ export default function LandingPageNoBrain() {
     const activeTool = TOOLS[selectedTool] ?? TOOLS[0];
 
     const handleAction = () => {
+        // Pixel da Meta: dispara o evento de Lead pro Facebook/Instagram Ads
+        // conseguirem medir conversão e otimizar entrega (não depende do redirect abaixo).
+        // @ts-ignore
+        if (typeof window.fbq === 'function') {
+            // @ts-ignore
+            window.fbq('track', 'Lead');
+        }
         // @ts-ignore
         if (typeof window.gtag_report_conversion === 'function') {
             // @ts-ignore
