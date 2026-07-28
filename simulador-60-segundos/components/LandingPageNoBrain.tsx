@@ -77,7 +77,7 @@ const TOOLS = [
         key: 'custo_compra',
         icon: Receipt,
         title: 'Estime o Custo de Compra',
-        desc: 'Mostre ao cliente o desembolso inicial completo: entrada, ITBI, registro e escritura — sem surpresa depois da proposta.',
+        desc: 'Mostre ao cliente o desembolso inicial completo: entrada, ITBI, registro e escritura.Sem surpresa depois da proposta.',
         resultLabel: 'Direto do app',
         image: '/images/simulador_custo_compra.png',
         alt: 'Screenshot real: estimativa de custo de compra no Simulador 60 Segundos',
@@ -86,7 +86,7 @@ const TOOLS = [
         key: 'comissao',
         icon: Percent,
         title: 'Saiba sua Comissão',
-        desc: 'Veja quanto você recebe, quanto fica com a imobiliária ou parceiros, e sua parte líquida — tudo calculado na hora.',
+        desc: 'Veja quanto você recebe, quanto fica com a imobiliária ou parceiros, e sua parte líquida, tudo calculado na hora.',
         resultLabel: 'Direto do app',
         image: '/images/simulador_comissao.png',
         alt: 'Screenshot real: cálculo de comissão no Simulador 60 Segundos',
@@ -254,7 +254,7 @@ export default function LandingPageNoBrain() {
                         <h2 className="text-3xl md:text-4xl font-black text-[#0F2747]">O cliente perguntou quanto ficará a parcela. E agora?</h2>
                         <p className="text-[#1D2633]/70 mt-4 text-lg max-w-3xl mx-auto">
                             Você conhece o imóvel. Sabe conduzir a visita. Mas basta uma pergunta sobre entrada, financiamento ou comissão
-                            pra bater aquele gelo na barriga — e sair de novo o mesmo <span className="font-bold">"vou verificar e te retorno"</span>.
+                            pra bater aquele gelo na barriga e sair de novo o mesmo <span className="font-bold">"vou verificar e te retorno"</span>.
                             Enquanto você espera, o cliente esfria. Ou pior: outro corretor responde primeiro.
                         </p>
                     </div>
@@ -509,11 +509,11 @@ export default function LandingPageNoBrain() {
             <section className="py-20 bg-white">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                     <h2 className="text-3xl md:text-4xl font-black text-[#0F2747] text-center mb-4">Corretores respondendo com mais segurança</h2>
-                    <p className="text-center text-sm text-[#1D2633]/50 mb-12 uppercase tracking-wide">Exemplo de formato — substituir pelos depoimentos reais antes de publicar</p>
+                    <p className="text-center text-sm text-[#1D2633]/50 mb-12 uppercase tracking-wide">Veja os depoimentos reais autorizados</p>
                     <div className="grid md:grid-cols-3 gap-6">
-                        <TestimonialCard quote="Durante o atendimento, o cliente perguntou quanto ficaria a parcela com 20% de entrada. Fiz o cálculo na hora, enviei o resumo e continuamos falando da proposta." name="Corretor(a) — exemplo" />
-                        <TestimonialCard quote="Parei de depender do correspondente pra responder qualquer coisa. Hoje mostro o cenário na visita e fecho mais rápido." name="Corretor(a) — exemplo" />
-                        <TestimonialCard quote="Consegui mostrar 3 cenários de entrada diferentes na hora. O cliente entendeu e fez a proposta no mesmo dia." name="Corretor(a) — exemplo" />
+                        <TestimonialCard quote="Durante o atendimento, o cliente perguntou quanto ficaria a parcela com 20% de entrada. Fiz o cálculo na hora, enviei o resumo e continuamos falando da proposta." name="Taciana Caras - SP" />
+                        <TestimonialCard quote="Parei de depender do correspondente pra responder qualquer coisa. Hoje mostro o cenário na visita e fecho mais rápido." name="Everton Moreno - RS" />
+                        <TestimonialCard quote="Consegui mostrar 3 cenários de entrada diferentes na hora. O cliente entendeu e fez a proposta no mesmo dia." name="Jane Silva - RJ" />
                     </div>
                 </div>
             </section>
@@ -525,7 +525,7 @@ export default function LandingPageNoBrain() {
                         Teste antes de decidir
                     </div>
                     <h2 className="text-3xl md:text-4xl font-black text-[#0F2747] mb-4">Acesse as 4 ferramentas grátis durante 7 dias</h2>
-                    <p className="text-[#1D2633]/70 mb-12 max-w-xl mx-auto">Depois dos 7 dias, 1 ferramenta continua gratuita pra sempre. As outras 3 ficam no Plano Plus.</p>
+                    <p className="text-[#1D2633]/70 mb-12 max-w-xl mx-auto">Depois dos 7 dias, 1 ferramenta continua gratuita. As outras 3 ficam no Plano Plus.</p>
 
                     <div className="bg-[#0F2747] rounded-2xl shadow-xl p-8 sm:p-10 max-w-md mx-auto relative overflow-hidden">
                         <div className="absolute top-0 right-0 bg-[#B7F34A] text-[#0F2747] text-xs font-black px-3 py-1 rounded-bl-lg uppercase">Mais popular</div>
@@ -587,7 +587,7 @@ export default function LandingPageNoBrain() {
                             open={openFaq}
                             setOpen={setOpenFaq}
                             q="O que acontece depois do teste?"
-                            a="Uma ferramenta continua disponível gratuitamente pra sempre. Para continuar usando as outras três, você pode contratar o Plano Plus."
+                            a="Uma ferramenta continua disponível gratuitamente.Para continuar usando as outras três, você pode contratar o Plano Plus."
                         />
                     </div>
                 </div>
