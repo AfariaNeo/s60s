@@ -34,12 +34,24 @@ export function useAuth() {
     };
 
     const signUp = async (email: string, password: string, name?: string) => {
+        // Recupera a atribuição de anúncio salva no primeiro toque (ver App.tsx),
+        // pra guardar junto do usuário e conseguir ligar a assinatura Plus (dias depois)
+        // à campanha/anúncio que trouxe essa pessoa.
+        let adAttribution: Record<string, any> | null = null;
+        try {
+            const raw = localStorage.getItem('s60s_ad_attribution');
+            if (raw) adAttribution = JSON.parse(raw);
+        } catch (e) {
+            // ignora — atribuição é um extra, nunca deve travar o cadastro
+        }
+
         const { error } = await supabase.auth.signUp({
             email,
             password,
             options: {
                 data: {
-                    full_name: name || null
+                    full_name: name || null,
+                    ad_attribution: adAttribution
                 }
             }
         });

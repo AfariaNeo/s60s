@@ -56,6 +56,13 @@ export default function AuthPage() {
 
                 await signUp(email, password, name.trim());
 
+                // Pixel da Meta: CompleteRegistration = cadastro/trial iniciado.
+                // Ainda não é a assinatura paga (isso só existe quando o Asaas confirma o pagamento),
+                // mas é o sinal rápido que o algoritmo do Meta usa pra otimizar a entrega dos anúncios.
+                if (typeof (window as any).fbq === 'function') {
+                    (window as any).fbq('track', 'CompleteRegistration');
+                }
+
                 // Track Google Ads Conversion
                 if (typeof (window as any).gtag === 'function') {
                     (window as any).gtag('event', 'conversion', {
