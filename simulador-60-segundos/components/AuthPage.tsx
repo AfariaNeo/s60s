@@ -5,7 +5,7 @@ import { Lock, Mail, Loader2, UserPlus, LogIn, AlertCircle, CheckCircle2, ArrowR
 type AuthView = 'selection' | 'login' | 'signup' | 'success';
 
 export default function AuthPage() {
-    const { signIn, signUp } = useAuth();
+    const { signIn, signUp, resetPassword } = useAuth();
     const [view, setView] = useState<AuthView>('selection');
 
     const [name, setName] = useState('');
@@ -14,6 +14,29 @@ export default function AuthPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     // Message logic is now handled by the 'success' view
+
+    const [resetLoading, setResetLoading] = useState(false);
+    const [resetMessage, setResetMessage] = useState<string | null>(null);
+
+    const handleForgotPassword = async () => {
+        setError(null);
+        setResetMessage(null);
+
+        if (!email.trim()) {
+            setError('Digite seu e-mail no campo acima e clique em "Esqueceu a senha?" de novo.');
+            return;
+        }
+
+        setResetLoading(true);
+        try {
+            await resetPassword(email.trim());
+            setResetMessage('Enviamos um link para redefinir sua senha. Verifique seu e-mail (e a caixa de spam).');
+        } catch (err: any) {
+            setError(err.message || 'Não foi possível enviar o e-mail de redefinição.');
+        } finally {
+            setResetLoading(false);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -283,7 +306,18 @@ export default function AuthPage() {
 
             {view === 'login' && (
                 <div className="mt-2 text-center text-sm">
-                    <button type="button" onClick={() => alert("Configure o reset de senha no Supabase")} className="text-gray-400 hover:text-emerald-600 transition-colors">Esqueceu a senha?</button>
+                    {resetMessage ? (
+                        <p className="text-emerald-600">{resetMessage}</p>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={handleForgotPassword}
+                            disabled={resetLoading}
+                            className="text-gray-400 hover:text-emerald-600 transition-colors disabled:opacity-50"
+                        >
+                            {resetLoading ? 'Enviando...' : 'Esqueceu a senha?'}
+                        </button>
+                    )}
                 </div>
             )}
         </form>

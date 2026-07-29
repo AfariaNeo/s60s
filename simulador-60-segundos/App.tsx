@@ -7,6 +7,7 @@ import { useAuth } from './hooks/useAuth';
 import { AnalyticsTracker, initGA } from './components/AnalyticsTracker';
 import { AdminDashboard } from './components/AdminDashboard';
 import LandingPageNoBrain from './components/LandingPageNoBrain';
+import SetNewPasswordScreen from './components/SetNewPasswordScreen';
 import LegalPage from './components/LegalPage';
 import { trackEvent } from './services/analyticsService';
 import { useAdminAccess } from './hooks/useAdminAccess';
@@ -77,7 +78,7 @@ function captureAdAttribution() {
 
 export default function SimulatorApp() {
   // --- AUTH & USER STATE ---
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, passwordRecoveryMode, signOut, updatePassword } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdminAccess();
 
   useEffect(() => {
@@ -91,6 +92,13 @@ export default function SimulatorApp() {
         <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
       </div>
     );
+  }
+
+  // Quem chegou aqui por um link de convite (compra na Hotmart) ou de "esqueci minha
+  // senha" precisa definir a senha antes de ver qualquer outra coisa — isso tem
+  // prioridade sobre Dashboard/LP/qualquer rota, não importa em qual URL a pessoa caiu.
+  if (passwordRecoveryMode) {
+    return <SetNewPasswordScreen onSubmit={updatePassword} />;
   }
 
   return (

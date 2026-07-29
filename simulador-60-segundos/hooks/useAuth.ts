@@ -6,8 +6,20 @@ import { supabase } from '../lib/supabaseClient';
 export function useAuth() {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    // Fica true quando a pessoa chega aqui por um link de convite (compra na Hotmart)
+    // ou de "esqueci minha senha" — nesses casos, antes de mostrar Dashboard ou LP,
+    // precisamos mostrar uma tela pedindo pra ela criar/definir a senha.
+    const [passwordRecoveryMode, setPasswordRecoveryMode] = useState(false);
 
     useEffect(() => {
+        // O link de convite/recovery do Supabase chega com esses parâmetros no hash da URL
+        // (ex: #access_token=...&type=invite). Checamos isso já de cara, sem depender só
+        // do evento PASSWORD_RECOVERY, porque nem sempre esse evento dispara pra type=invite.
+        const hash = window.location.hash;
+        if (hash && (hash.includes('type=recovery') || hash.includes('type=invite'))) {
+            setPasswordRecoveryMode(true);
+        }
+
         // Check active session
         supabase.auth.getSession().then(({ data: { session } }) => {
             setUser(session?.user ?? null);
@@ -18,6 +30,9 @@ export function useAuth() {
         const {
             data: { subscription },
         } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (_event === 'PASSWORD_RECOVERY') {
+                setPasswordRecoveryMode(true);
+            }
             setUser(session?.user ?? null);
             setLoading(false);
         });
@@ -67,5 +82,24 @@ export function useAuth() {
         setUser(null);
     };
 
-    return { user, loading, signIn, signUp, signOut };
+    // Dispara o e-mail de "esqueci minha senha" — usa o mesmo caminho de recovery
+    // do Supabase, então quem clicar no link cai na mesma tela de "definir senha"
+    // usada pelo convite da Hotmart.
+    const resetPassword = async (email: string) => {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/`,
+        });
+        if (error) throw error;
+    };
+
+    // Define a senha nova depois que a pessoa entrou aqui via link de convite/recovery.
+    const updatePassword = async (newPassword: string) => {
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) throw error;
+        setPasswordRecoveryMode(false);
+        // Limpa o token da barra de endereço — não faz sentido deixar ele exposto/reutilizável.
+        window.history.replaceState(null, '', window.location.pathname);
+    };
+
+    return { user, loading, passwordRecoveryMode, signIn, signUp, signOut, resetPassword, updatePassword };
 }
