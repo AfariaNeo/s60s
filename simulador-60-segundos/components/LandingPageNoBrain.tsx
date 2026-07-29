@@ -18,10 +18,10 @@ import {
 // =====================================================================================
 // LANDING PAGE — MODELO "NOBRAIN" (baixo ticket / decisão imediata)
 // -------------------------------------------------------------------------------------
-// Este arquivo é um MODELO/DRAFT. Ainda não está plugado em nenhuma rota do App.tsx.
-// Para publicar como uma 4ª variante, importe e adicione, por ex.:
-//   import LandingPageNoBrain from './components/LandingPageNoBrain';
-//   <Route path="/vendas-direto" element={<LandingPageNoBrain />} />
+// Esta é a landing page OFICIAL, plugada na rota "/" do App.tsx. Substituiu a
+// LandingPage.tsx original (trial grátis) e as variantes LandingPageAggressive /
+// LandingPageAggressive2 (/vendas-pro e /vendas-explosivo), removidas por não terem
+// tráfego pago ativo e por ainda descreverem o funil antigo de teste grátis.
 //
 // Paleta usada (ver Paleta_de_Cores.docx):
 //   Azul-marinho  #0F2747  -> hero, footer, títulos fortes
@@ -52,6 +52,10 @@ import {
 //   prints em produção também — aqui na LP nova já trocamos pelos 4 screenshots reais
 //   recém-fornecidos (simulador_financiamento/precificacao/custo_compra/comissao).
 // =====================================================================================
+
+// Link de checkout direto do Hotmart — clicar em qualquer CTA leva pra cá agora,
+// em vez de criar um cadastro de teste grátis (fluxo antigo via Asaas).
+const HOTMART_CHECKOUT_URL = 'https://pay.hotmart.com/N106925917M';
 
 // 4 ferramentas, na ordem solicitada. Clique na lista da esquerda troca a imagem da direita.
 const TOOLS = [
@@ -110,12 +114,15 @@ export default function LandingPageNoBrain() {
             // @ts-ignore
             window.fbq('track', 'Lead');
         }
+        // Compra direta na Hotmart — não cria mais cadastro de teste grátis.
+        // gtag_report_conversion aceita qualquer URL e redireciona pra ela depois
+        // de registrar a conversão do Google Ads.
         // @ts-ignore
         if (typeof window.gtag_report_conversion === 'function') {
             // @ts-ignore
-            window.gtag_report_conversion('/login');
+            window.gtag_report_conversion(HOTMART_CHECKOUT_URL);
         } else {
-            navigate('/login');
+            window.location.href = HOTMART_CHECKOUT_URL;
         }
     };
 
@@ -162,7 +169,7 @@ export default function LandingPageNoBrain() {
                                 onClick={handleAction}
                                 className="bg-[#B7F34A] text-[#0F2747] px-6 py-2.5 rounded-xl font-extrabold text-sm hover:brightness-95 transition-all shadow-lg shadow-black/20 active:scale-95"
                             >
-                                QUERO TESTAR GRÁTIS
+                                QUERO ACESSO AGORA
                             </button>
                         </div>
 
@@ -175,7 +182,7 @@ export default function LandingPageNoBrain() {
                 {isMenuOpen && (
                     <div className="md:hidden bg-[#0F2747] border-t border-white/10 p-4">
                         <button onClick={handleAction} className="block w-full text-center bg-[#B7F34A] text-[#0F2747] py-3 rounded-xl font-extrabold">
-                            QUERO TESTAR GRÁTIS
+                            QUERO ACESSO AGORA
                         </button>
                     </div>
                 )}
@@ -215,15 +222,15 @@ export default function LandingPageNoBrain() {
                                     onClick={handleAction}
                                     className="w-full sm:w-auto px-8 py-4 bg-[#B7F34A] text-[#0F2747] rounded-xl font-black text-lg hover:brightness-95 transition-all transform hover:scale-105 shadow-xl shadow-black/30 flex items-center justify-center gap-2"
                                 >
-                                    QUERO TESTAR GRÁTIS POR 7 DIAS
+                                    QUERO ACESSO IMEDIATO
                                     <ArrowRight className="w-5 h-5" />
                                 </button>
                             </div>
 
                             <div className="mt-6 flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2 text-sm text-[#B8C4D1]">
-                                <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-[#B7F34A]" /> Cadastro grátis, sem cartão</span>
+                                <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-[#B7F34A]" /> Acesso liberado na hora</span>
                                 <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-[#B7F34A]" /> 4 ferramentas em 1 só app</span>
-                                <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-[#B7F34A]" /> 1 ferramenta grátis</span>
+                                <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-[#B7F34A]" /> Pagamento 100% seguro</span>
                             </div>
                         </div>
 
@@ -399,7 +406,7 @@ export default function LandingPageNoBrain() {
                         onClick={handleAction}
                         className="mt-14 px-8 py-4 bg-[#0F2747] text-white rounded-xl font-black text-lg hover:brightness-110 transition-all shadow-xl inline-flex items-center gap-2"
                     >
-                        COMEÇAR MEU TESTE GRÁTIS <ArrowRight className="w-5 h-5" />
+                        QUERO COMEÇAR AGORA <ArrowRight className="w-5 h-5" />
                     </button>
                 </div>
             </section>
@@ -529,10 +536,10 @@ export default function LandingPageNoBrain() {
             <section id="oferta" className="py-20 bg-[#F3F5F7]">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <div className="inline-flex items-center gap-2 bg-[#0F2747]/5 text-[#0F2747] px-4 py-1.5 rounded-full text-xs font-bold mb-4 uppercase tracking-wide">
-                        Teste antes de decidir
+                        Acesso liberado na hora
                     </div>
-                    <h2 className="text-3xl md:text-4xl font-black text-[#0F2747] mb-4">Acesse as 4 ferramentas grátis durante 7 dias</h2>
-                    <p className="text-[#1D2633]/70 mb-12 max-w-xl mx-auto">Depois dos 7 dias, 1 ferramenta continua gratuita. As outras 3 ficam no Plano Plus.</p>
+                    <h2 className="text-3xl md:text-4xl font-black text-[#0F2747] mb-4">Tenha as 4 ferramentas liberadas agora mesmo</h2>
+                    <p className="text-[#1D2633]/70 mb-12 max-w-xl mx-auto">Um pagamento por ano. Sem limite de uso, sem burocracia — acesso liberado assim que a compra é confirmada.</p>
 
                     <div className="bg-[#0F2747] rounded-2xl shadow-xl p-8 sm:p-10 max-w-md mx-auto relative overflow-hidden">
                         <div className="absolute top-0 right-0 bg-[#B7F34A] text-[#0F2747] text-xs font-black px-3 py-1 rounded-bl-lg uppercase">Mais popular</div>
@@ -548,9 +555,9 @@ export default function LandingPageNoBrain() {
                             <PricingCheck text="Suporte prioritário" />
                         </ul>
                         <button onClick={handleAction} className="w-full py-4 bg-[#B7F34A] text-[#0F2747] font-black rounded-xl hover:brightness-95 transition-colors shadow-lg">
-                            QUERO TESTAR AS 4 FERRAMENTAS
+                            GARANTIR ACESSO AGORA
                         </button>
-                        <p className="mt-3 text-xs text-[#B8C4D1]">Cadastro gratuito. Teste por 7 dias. Cancele quando quiser.</p>
+                        <p className="mt-3 text-xs text-[#B8C4D1]">Pagamento processado com segurança pela Hotmart. Acesso liberado por e-mail assim que a compra for aprovada.</p>
                     </div>
                 </div>
             </section>
@@ -588,13 +595,13 @@ export default function LandingPageNoBrain() {
                         />
                         <FaqItem index={2} open={openFaq} setOpen={setOpenFaq} q="Preciso entender de matemática?" a="Não. Você informa os dados e a aplicação organiza os resultados pra você." />
                         <FaqItem index={3} open={openFaq} setOpen={setOpenFaq} q="Funciona apenas para financiamento?" a="Não. São 4 ferramentas: financiamento, valor de anúncio, custos da compra e comissão." />
-                        <FaqItem index={4} open={openFaq} setOpen={setOpenFaq} q="Posso testar antes de assinar?" a="Sim. Você tem 7 dias grátis para testar as 4 ferramentas, sem precisar de cartão de crédito." />
+                        <FaqItem index={4} open={openFaq} setOpen={setOpenFaq} q="Como recebo o acesso depois de comprar?" a="Assim que o pagamento é aprovado, você recebe um e-mail com um link seguro para criar sua senha e já começar a usar o Simulador." />
                         <FaqItem
                             index={5}
                             open={openFaq}
                             setOpen={setOpenFaq}
-                            q="O que acontece depois do teste?"
-                            a="Uma ferramenta continua disponível gratuitamente.Para continuar usando as outras três, você pode contratar o Plano Plus."
+                            q="Existe garantia?"
+                            a="Sim. A compra é processada pela Hotmart, plataforma que aplica a política de garantia e reembolso exibida no próprio checkout no momento do pagamento."
                         />
                     </div>
                 </div>
@@ -633,7 +640,7 @@ export default function LandingPageNoBrain() {
                         onClick={handleAction}
                         className="px-10 py-5 bg-[#B7F34A] text-[#0F2747] rounded-xl font-black text-xl hover:brightness-95 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
                     >
-                        TESTAR O SIMULADOR 60 SEGUNDOS GRÁTIS
+                        QUERO O SIMULADOR 60 SEGUNDOS AGORA
                     </button>
                     <p className="mt-6 text-sm text-[#B8C4D1]">Responda mais rápido. Atenda com mais segurança. Avance da dúvida para a proposta.</p>
                 </div>
@@ -673,7 +680,7 @@ export default function LandingPageNoBrain() {
                     onClick={handleAction}
                     className="w-full py-3.5 bg-[#B7F34A] text-[#0F2747] rounded-xl font-black text-base shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2"
                 >
-                    QUERO TESTAR GRÁTIS <ArrowRight className="w-4 h-4" />
+                    QUERO ACESSO AGORA <ArrowRight className="w-4 h-4" />
                 </button>
             </div>
         </div>

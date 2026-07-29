@@ -1,9 +1,12 @@
 
-import React, { useEffect, useState } from 'react';
-import { Check, X, Crown, Loader2 } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { Check, X } from 'lucide-react';
 import { UserPlan } from '../types';
-import { supabase } from '../lib/supabaseClient';
 import { useAnalytics } from '../hooks/useAnalytics';
+
+// Link de checkout direto do Hotmart — clicar em "Assinar Agora" leva pra cá
+// (fluxo antigo via Asaas/create-payment foi removido).
+const HOTMART_CHECKOUT_URL = 'https://pay.hotmart.com/N106925917M';
 
 interface PricingModalProps {
   isOpen: boolean;
@@ -16,15 +19,6 @@ interface PricingModalProps {
 
 const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPlan, currentPlan, trigger = 'user_click', isProcessing = false }) => {
   const { track } = useAnalytics();
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isPromoValidating, setIsPromoValidating] = useState(false);
-  const [cpf, setCpf] = useState('');
-  const [promoCode, setPromoCode] = useState('');
-  const [promoValidationMessage, setPromoValidationMessage] = useState('');
-  const [promoValidationSuccess, setPromoValidationSuccess] = useState(false);
-  const [previewDiscountValue, setPreviewDiscountValue] = useState<number | null>(null);
-  const [previewFinalPrice, setPreviewFinalPrice] = useState<number | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -32,155 +26,17 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
     }
   }, [isOpen, trigger, currentPlan, track]);
 
-  const formatCPF = (value: string) => {
-    return value
-      .replace(/\D/g, '')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d{1,2})/, '$1-$2')
-      .replace(/(-\d{2})\d+?$/, '$1');
-  };
-
-  const validatePromoCode = async () => {
-    const normalizedPromoCode = promoCode.trim().toUpperCase();
-
-    if (!normalizedPromoCode) {
-      setPromoValidationMessage('Digite um código promocional para validar.');
-      setPromoValidationSuccess(false);
-      setPreviewDiscountValue(null);
-      setPreviewFinalPrice(null);
-      return;
+  // Compra direta na Hotmart — não passa mais pelo create-payment/Asaas.
+  // CPF e cupom de desconto agora são tratados dentro do próprio checkout da Hotmart.
+  const handleSubscribe = () => {
+    track('button_click', 'upgrade_button_clicked', { plan: 'plus', billingCycle: 'annual' }, 'PricingModal');
+    track('conversion', 'redirected_to_hotmart_checkout', {}, 'PricingModal');
+    // @ts-ignore
+    if (typeof window.fbq === 'function') {
+      // @ts-ignore
+      window.fbq('track', 'Lead');
     }
-
-    setIsPromoValidating(true);
-    setPromoValidationMessage('');
-
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-
-      if (!token) {
-        setPromoValidationMessage('Sessão expirada. Faça login novamente.');
-        setPromoValidationSuccess(false);
-        setPreviewDiscountValue(null);
-        setPreviewFinalPrice(null);
-        return;
-      }
-
-      const { data, error } = await supabase.functions.invoke('validate-promo-code', {
-        body: {
-          billingCycle: 'annual',
-          couponCode: normalizedPromoCode,
-        }
-      });
-
-      if (error && !data?.valid) {
-        setPromoValidationMessage((error as Error)?.message || 'Não foi possível validar o código promocional no momento.');
-        setPromoValidationSuccess(false);
-        setPreviewDiscountValue(null);
-        setPreviewFinalPrice(null);
-        return;
-      }
-
-      if (!data?.valid) {
-        setPromoValidationMessage(data?.message || 'Código promocional inválido.');
-        setPromoValidationSuccess(false);
-        setPreviewDiscountValue(null);
-        setPreviewFinalPrice(null);
-        return;
-      }
-
-      setPromoValidationMessage(`Código aplicado com sucesso. Novo valor: R$ ${data.finalPrice.toFixed(2).replace('.', ',')}.`);
-      setPromoValidationSuccess(true);
-      setPreviewDiscountValue(data.discountValue);
-      setPreviewFinalPrice(data.finalPrice);
-    } catch (err) {
-      console.error(err);
-      setPromoValidationSuccess(false);
-      setPromoValidationMessage('Não foi possível validar o código promocional no momento.');
-      setPreviewDiscountValue(null);
-      setPreviewFinalPrice(null);
-    } finally {
-      setIsPromoValidating(false);
-    }
-  };
-
-  const handleSubscribe = async (plan: UserPlan, cycle: 'monthly' | 'annual') => {
-    track('button_click', 'upgrade_button_clicked', { plan, billingCycle: cycle }, 'PricingModal');
-
-    // 1. CPF Validation (Restored)
-    if (cpf.length < 14) {
-      track('validation_error', 'cpf_invalid', { cpfLength: cpf.length }, 'PricingModal');
-      alert("Por favor, digite um CPF válido para emissão da nota fiscal.");
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-
-      if (!token) {
-        track('error', 'session_expired_during_upgrade', {}, 'PricingModal');
-        alert("Sessão expirada. Faça login novamente.");
-        return;
-      }
-
-      const normalizedPromoCode = promoCode.trim().toUpperCase();
-
-      if (normalizedPromoCode && !promoValidationSuccess) {
-        alert('Valide o código promocional antes de prosseguir com a assinatura.');
-        return;
-      }
-
-      // Revert to default behavior: supabase-js automatically attaches Auth header
-      const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: {
-          billingCycle: cycle,
-          cpf: cpf.replace(/\D/g, ''),
-          couponCode: normalizedPromoCode || undefined,
-          discountValue: previewDiscountValue ?? undefined,
-        }
-      });
-
-      if (error) {
-        console.error("Function Error:", error);
-        track('error', 'create_payment_error', { message: error.message }, 'PricingModal');
-        // Extract error message if possible
-        let errorMsg = "Erro desconhecido";
-        if (error instanceof Error) errorMsg = error.message;
-        else if (typeof error === 'object' && error !== null) errorMsg = JSON.stringify(error);
-
-        alert(`Erro do sistema: ${errorMsg}`);
-        return;
-      }
-
-      const { paymentUrl, error: paymentError } = data;
-
-      if (paymentError) {
-        track('error', 'payment_url_error', { paymentError }, 'PricingModal');
-        alert(`Erro: ${paymentError}`);
-        return;
-      }
-
-      if (paymentUrl) {
-        track('conversion', 'payment_url_generated', { billingCycle: cycle }, 'PricingModal');
-        // Redirect current tab to avoid popup blockers on mobile
-        window.location.href = paymentUrl;
-      } else {
-        track('error', 'payment_url_missing', {}, 'PricingModal');
-        alert('Erro: Link de pagamento não gerado.');
-      }
-
-    } catch (err) {
-      console.error(err);
-      track('error', 'handle_subscribe_exception', {
-        message: err instanceof Error ? err.message : 'unknown',
-      }, 'PricingModal');
-      alert('Ocorreu um erro ao processar.');
-    } finally {
-      setIsLoading(false);
-    }
+    window.location.href = HOTMART_CHECKOUT_URL;
   };
 
   if (!isOpen) return null;
@@ -232,64 +88,13 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
               <li className="flex gap-2"><Check className="w-4 h-4 text-emerald-500" /> Envio por WhatsApp e PDF</li>
             </ul>
 
-            <div className="mb-4 mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">CPF (Necessário para Nota Fiscal)</label>
-              <input
-                type="text"
-                placeholder="000.000.000-00"
-                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                value={cpf}
-                onChange={(e) => setCpf(formatCPF(e.target.value))}
-                maxLength={14}
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Código Promocional</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Digite seu código"
-                  className="flex-1 border border-gray-300 rounded px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  value={promoCode}
-                  onChange={(e) => {
-                    setPromoCode(e.target.value.toUpperCase());
-                    setPromoValidationMessage('');
-                    setPromoValidationSuccess(false);
-                    setPreviewDiscountValue(null);
-                    setPreviewFinalPrice(null);
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={validatePromoCode}
-                  disabled={isPromoValidating || !promoCode.trim()}
-                  className="px-3 py-2 text-sm font-bold rounded bg-slate-900 text-white hover:bg-slate-700 disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {isPromoValidating ? 'Validando...' : 'Validar'}
-                </button>
-              </div>
-
-              {promoValidationMessage && (
-                <p className={`mt-2 text-sm ${promoValidationSuccess ? 'text-emerald-600' : 'text-red-600'}`}>
-                  {promoValidationMessage}
-                </p>
-              )}
-
-              {previewFinalPrice !== null && (
-                <div className="mt-2 rounded bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm text-emerald-700">
-                  Valor com desconto: <span className="font-bold">R$ {previewFinalPrice.toFixed(2).replace('.', ',')}</span>
-                </div>
-              )}
-            </div>
-
             <button
-              onClick={() => handleSubscribe('plus', 'annual')}
-              disabled={isLoading}
-              className="w-full mt-6 py-2 bg-emerald-600 text-white font-bold rounded hover:bg-emerald-700 flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              onClick={handleSubscribe}
+              className="w-full mt-6 py-2 bg-emerald-600 text-white font-bold rounded hover:bg-emerald-700 flex justify-center items-center gap-2"
             >
-              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Assinar Agora'}
+              Assinar Agora
             </button>
+            <p className="mt-2 text-xs text-center text-gray-400">Você será redirecionado para o checkout seguro da Hotmart.</p>
           </div>
         </div>
       </div>

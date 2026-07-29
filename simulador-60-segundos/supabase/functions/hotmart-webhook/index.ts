@@ -145,15 +145,18 @@ Deno.serve(async (req: Request) => {
             return new Response(JSON.stringify({ error: 'No user id after invite' }), { status: 500 })
         }
 
-        // O trigger handle_new_user() já cria o profile como 'free' — agora promovemos pra 'plus'.
+        // Não confiamos em nenhum trigger externo pra criar o profile — criamos/atualizamos
+        // direto por aqui (upsert), garantindo que a linha existe mesmo que o gatilho
+        // handle_new_user() não rode pra usuários criados via Admin API.
         const { error: upNewError } = await supabaseAdmin
             .from('profiles')
-            .update({
+            .upsert({
+                id: newUserId,
+                email: buyerEmail,
+                name: buyerName || null,
                 plan: 'plus',
                 subscription_end_date: nextYear.toISOString(),
-                name: buyerName || null,
-            })
-            .eq('id', newUserId)
+            }, { onConflict: 'id' })
 
         if (upNewError) {
             console.error('Failed to upgrade new profile:', upNewError)

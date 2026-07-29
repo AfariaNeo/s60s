@@ -6,10 +6,8 @@ import Dashboard from './components/Dashboard';
 import { useAuth } from './hooks/useAuth';
 import { AnalyticsTracker, initGA } from './components/AnalyticsTracker';
 import { AdminDashboard } from './components/AdminDashboard';
-import LandingPage from './components/LandingPage';
+import LandingPageNoBrain from './components/LandingPageNoBrain';
 import LegalPage from './components/LegalPage';
-import LandingPageAggressive from './components/LandingPageAggressive';
-import LandingPageAggressive2 from './components/LandingPageAggressive2';
 import { trackEvent } from './services/analyticsService';
 import { useAdminAccess } from './hooks/useAdminAccess';
 
@@ -102,15 +100,13 @@ export default function SimulatorApp() {
       <Routes>
         <Route path="/admin" element={isAdmin ? <AdminDashboard /> : <Navigate to="/" />} />
         <Route path="/legal" element={<LegalPage />} />
-        <Route path="/vendas-pro" element={<LandingPageAggressive />} />
-        <Route path="/vendas-explosivo" element={<LandingPageAggressive2 />} />
         <Route
           path="/login"
           element={!user ? <AuthPage /> : <Navigate to="/" />}
         />
         <Route
           path="/"
-          element={user ? <Dashboard user={user} signOut={signOut} /> : <LandingPage />}
+          element={user ? <Dashboard user={user} signOut={signOut} /> : <LandingPageNoBrain />}
         />
         {/* Redirect unknown routes to home */}
         <Route path="*" element={<Navigate to="/" />} />
