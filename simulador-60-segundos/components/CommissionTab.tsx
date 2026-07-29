@@ -86,7 +86,7 @@ export default function CommissionTab({
             <div className="lg:col-span-4 space-y-6">
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                     <h2 className="text-lg font-semibold text-gray-800 mb-5 flex items-center gap-2">
-                        <Briefcase className="w-5 h-5 text-emerald-600" />
+                        <Briefcase className="w-5 h-5 text-[#0F2747]" />
                         Configurar Comissão
                     </h2>
 
@@ -103,7 +103,7 @@ export default function CommissionTab({
                                         value="percentage_of_value"
                                         checked={params.calculationMode === 'percentage_of_value'}
                                         onChange={handleInputChange}
-                                        className="text-emerald-600 focus:ring-emerald-500"
+                                        className="text-[#0F2747] focus:ring-[#B7F34A]"
                                     />
                                     <span className="text-sm font-medium text-gray-700">Percentual Direto (Sobre Venda)</span>
                                 </label>
@@ -114,7 +114,7 @@ export default function CommissionTab({
                                         value="percentage_of_total"
                                         checked={params.calculationMode === 'percentage_of_total'}
                                         onChange={handleInputChange}
-                                        className="text-emerald-600 focus:ring-emerald-500"
+                                        className="text-[#0F2747] focus:ring-[#B7F34A]"
                                     />
                                     <span className="text-sm font-medium text-gray-700">Split (Sobre Comissão Total)</span>
                                 </label>
@@ -130,7 +130,7 @@ export default function CommissionTab({
                                     type="text"
                                     value={propertyValueDisplay}
                                     onChange={handlePropertyChange}
-                                    className="block w-full pl-10 px-3 py-3 border border-gray-300 rounded-lg focus:ring-emerald-500"
+                                    className="block w-full pl-10 px-3 py-3 border border-gray-300 rounded-lg focus:ring-[#B7F34A]"
                                     placeholder="0,00"
                                 />
                             </div>
@@ -152,7 +152,7 @@ export default function CommissionTab({
                                     step="0.1"
                                     value={params.totalCommissionPercent || ''}
                                     onChange={handleInputChange}
-                                    className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-emerald-500"
+                                    className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-[#B7F34A]"
                                 />
                             </div>
                             {params.totalCommissionPercent > 6 && <p className="text-red-500 text-xs mt-1">Máximo permitido é 6%</p>}
@@ -176,7 +176,7 @@ export default function CommissionTab({
                                     name="agentSharePercent"
                                     value={params.agentSharePercent || ''}
                                     onChange={handleInputChange}
-                                    className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-emerald-500"
+                                    className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-[#B7F34A]"
                                 />
                             </div>
                             <p className="text-xs text-gray-500 mt-1">
@@ -189,7 +189,7 @@ export default function CommissionTab({
 
                     <button
                         onClick={onCalculate}
-                        className="w-full mt-6 bg-emerald-600 text-white font-bold py-3 rounded-lg hover:bg-emerald-700 transition-all"
+                        className="w-full mt-6 bg-[#0F2747] text-white font-bold py-3 rounded-lg hover:bg-[#0B1D38] transition-all"
                     >
                         Calcular Comissão
                     </button>
@@ -220,16 +220,16 @@ export default function CommissionTab({
                         </div>
 
                         {/* Card Seu Ganho (Destaque) */}
-                        <div className="md:col-span-2 bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-2xl shadow-lg text-white p-8 relative overflow-hidden">
+                        <div className="md:col-span-2 bg-gradient-to-br from-[#0F2747] to-[#081426] rounded-2xl shadow-lg text-white p-8 relative overflow-hidden">
                             <div className="absolute right-0 top-0 p-8 opacity-20">
                                 <DollarSign className="w-48 h-48 text-white" />
                             </div>
-                            <h3 className="font-bold text-xl text-emerald-100 mb-2 flex items-center gap-2">
+                            <h3 className="font-bold text-xl text-white/80 mb-2 flex items-center gap-2">
                                 <Briefcase className="w-6 h-6" /> Sua Parte
                             </h3>
                             <p className="text-5xl font-bold mb-4">{formatCurrency(results.agentCommissionValue)}</p>
 
-                            <div className="flex gap-4 text-sm text-emerald-100 bg-emerald-900/30 p-4 rounded-lg inline-flex">
+                            <div className="flex gap-4 text-sm text-[#B7F34A] bg-black/20 p-4 rounded-lg inline-flex">
                                 <div className="flex items-center gap-1">
                                     <Percent className="w-4 h-4" />
                                     <span className="font-bold">{params.agentSharePercent}%</span>

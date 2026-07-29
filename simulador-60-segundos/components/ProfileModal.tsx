@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, User, Shield, CreditCard, RotateCcw, Crown, KeyRound, Calendar, MinusCircle, HelpCircle, Phone, BadgeCheck } from 'lucide-react';
+import { X, User, Shield, CreditCard, RotateCcw, Crown, KeyRound, Calendar, MinusCircle, HelpCircle, BadgeCheck } from 'lucide-react';
 import { UserProfile } from '../types';
 import { supabase } from '../lib/supabaseClient';
 
@@ -14,7 +14,6 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, profile, o
   const [isResetting, setIsResetting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
-  const [phone, setPhone] = useState(profile?.phone || '');
   const [creciNumber, setCreciNumber] = useState(profile?.creciNumber || '');
   const [creciState, setCreciState] = useState(profile?.creciState || '');
   const [isSaving, setIsSaving] = useState(false);
@@ -56,7 +55,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, profile, o
     setIsResetting(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(profile.email, {
-        redirectTo: `${window.location.origin}/update-password`,
+        redirectTo: `${window.location.origin}/confirmar-acesso`,
       });
       if (error) throw error;
       alert('Email de redefinição de senha enviado!');
@@ -99,7 +98,6 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, profile, o
     setIsSaving(true);
     try {
       const success = await onProfileUpdate({
-        phone: phone.trim() || undefined,
         creciNumber: creciNumber.trim() || undefined,
         creciState: creciState.trim().toUpperCase() || undefined,
       });
@@ -125,19 +123,19 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, profile, o
 
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-start md:items-center justify-center p-4 overflow-y-auto">
       <div
         className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
 
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div className="bg-emerald-600 px-6 py-8 text-center">
-          <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-emerald-400/30 text-3xl font-bold text-emerald-600 shadow-lg">
+      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 my-4 md:my-8">
+        <div className="bg-[#0F2747] px-6 py-8 text-center">
+          <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-[#B7F34A]/40 text-3xl font-bold text-[#0F2747] shadow-lg">
             {profile.name.charAt(0).toUpperCase()}
           </div>
           <h2 className="text-2xl font-bold text-white mb-1">{profile.name}</h2>
-          <p className="text-emerald-100 text-sm">{profile.email}</p>
+          <p className="text-white/70 text-sm">{profile.email}</p>
         </div>
 
         <div className="p-6 space-y-6">
@@ -158,7 +156,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, profile, o
 
             <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
               <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1">Status</p>
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${profile.plan === 'plus' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${profile.plan === 'plus' ? 'bg-[#E1E8F0] text-[#0F2747]' : 'bg-gray-100 text-gray-800'
                 }`}>
                 {profile.plan === 'plus' ? 'Ativo' : 'Limitado'}
               </span>
@@ -166,11 +164,11 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, profile, o
           </div>
 
           {profile.plan === 'plus' && profile.subscriptionEndDate && (
-            <div className="flex items-center gap-3 p-4 bg-emerald-50 rounded-xl border border-emerald-100">
-              <Calendar className="w-5 h-5 text-emerald-600" />
+            <div className="flex items-center gap-3 p-4 bg-[#F1F5F9] rounded-xl border border-[#E1E8F0]">
+              <Calendar className="w-5 h-5 text-[#0F2747]" />
               <div>
-                <p className="text-xs text-emerald-600 font-medium">Renovação</p>
-                <p className="text-sm font-bold text-emerald-900">
+                <p className="text-xs text-[#0F2747] font-medium">Renovação</p>
+                <p className="text-sm font-bold text-[#081426]">
                   {new Date(profile.subscriptionEndDate).toLocaleDateString()}
                 </p>
               </div>
@@ -203,17 +201,9 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, profile, o
 
           <div className="space-y-3 rounded-xl bg-gray-50 p-4 border border-gray-100">
             <div className="flex items-center gap-2 text-sm font-bold text-gray-800">
-              <Phone className="w-4 h-4 text-emerald-600" />
-              Dados de Contato
+              <Shield className="w-4 h-4 text-[#0F2747]" />
+              Dados Profissionais
             </div>
-
-            <label className="block text-xs font-medium text-gray-700">Telefone (opcional)</label>
-            <input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="(11) 99999-9999"
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-            />
 
             <label className="block text-xs font-medium text-gray-700">CRECI</label>
             <input
@@ -234,7 +224,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, profile, o
             <button
               onClick={handleSaveProfile}
               disabled={isSaving}
-              className="w-full py-2.5 px-4 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full py-2.5 px-4 bg-[#0F2747] text-white rounded-lg hover:bg-[#0B1D38] transition-colors font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-50"
             >
               <BadgeCheck className="w-4 h-4" />
               {isSaving ? 'Salvando...' : 'Salvar Perfil'}
@@ -266,7 +256,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, profile, o
           <div className="pt-4 border-t border-gray-100 text-center">
             <p className="text-xs text-gray-500 flex items-center justify-center gap-1">
               Precisa de ajuda?
-              <a href="mailto:contato@simulador60segundos.com.br" className="text-emerald-600 hover:text-emerald-700 font-medium hover:underline flex items-center gap-1">
+              <a href="mailto:contato@simulador60segundos.com.br" className="text-[#0F2747] hover:text-[#0B1D38] font-medium hover:underline flex items-center gap-1">
                 <HelpCircle className="w-3 h-3" />
                 Fale com o Suporte
               </a>

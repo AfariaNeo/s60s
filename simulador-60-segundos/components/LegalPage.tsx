@@ -10,19 +10,19 @@ export default function LegalPage() {
             <div className="max-w-4xl mx-auto">
                 <button
                     onClick={() => navigate(-1)}
-                    className="flex items-center text-gray-600 hover:text-emerald-600 mb-8 transition-colors"
+                    className="flex items-center text-gray-600 hover:text-[#0F2747] mb-8 transition-colors"
                 >
                     <ArrowLeft className="w-5 h-5 mr-2" />
                     Voltar
                 </button>
 
                 <div className="bg-white shadow sm:rounded-lg overflow-hidden">
-                    <div className="px-4 py-5 sm:px-6 bg-emerald-600">
+                    <div className="px-4 py-5 sm:px-6 bg-[#0F2747]">
                         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
                             <Shield className="w-6 h-6" />
                             Termos de Uso e Política de Privacidade
                         </h1>
-                        <p className="mt-1 max-w-2xl text-sm text-emerald-100">
+                        <p className="mt-1 max-w-2xl text-sm text-white/70">
                             Última atualização: {new Date().toLocaleDateString()}
                         </p>
                     </div>
@@ -32,7 +32,7 @@ export default function LegalPage() {
                         {/* --- PRIVACIDADE --- */}
                         <section>
                             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                <FileText className="w-5 h-5 text-emerald-600" />
+                                <FileText className="w-5 h-5 text-[#0F2747]" />
                                 1. Política de Privacidade (LGPD)
                             </h2>
                             <p className="mb-4">
@@ -63,7 +63,7 @@ export default function LegalPage() {
                         {/* --- TERMOS DE USO --- */}
                         <section>
                             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                <FileText className="w-5 h-5 text-emerald-600" />
+                                <FileText className="w-5 h-5 text-[#0F2747]" />
                                 2. Termos de Uso
                             </h2>
 
@@ -91,7 +91,7 @@ export default function LegalPage() {
 
                     </div>
                     <div className="px-4 py-4 sm:px-6 bg-gray-50 border-t border-gray-200 text-center text-sm text-gray-500">
-                        Dúvidas? Entre em contato com nosso suporte: <a href="mailto:contato@simulador60segundos.com.br" className="text-emerald-600 font-bold hover:underline">contato@simulador60segundos.com.br</a>
+                        Dúvidas? Entre em contato com nosso suporte: <a href="mailto:contato@simulador60segundos.com.br" className="text-[#0F2747] font-bold hover:underline">contato@simulador60segundos.com.br</a>
                     </div>
                 </div>
             </div>

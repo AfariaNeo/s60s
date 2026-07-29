@@ -53,7 +53,7 @@ export default function ConfirmAccess({ confirmToken }: ConfirmAccessProps) {
                 </p>
                 <Link
                     to="/login"
-                    className="inline-block bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-emerald-700 transition-colors"
+                    className="inline-block bg-[#0F2747] text-white px-6 py-2.5 rounded-xl font-bold hover:bg-[#0B1D38] transition-colors"
                 >
                     Ir para login
                 </Link>
@@ -63,7 +63,7 @@ export default function ConfirmAccess({ confirmToken }: ConfirmAccessProps) {
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center py-12 px-4">
-            <Loader2 className="w-10 h-10 text-emerald-600 animate-spin" />
+            <Loader2 className="w-10 h-10 text-[#0F2747] animate-spin" />
             <p className="mt-4 text-gray-600">Confirmando seu acesso...</p>
         </div>
     );

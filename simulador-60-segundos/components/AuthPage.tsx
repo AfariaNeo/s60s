@@ -1,36 +1,52 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { Lock, Mail, Loader2, UserPlus, LogIn, AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Lock, Mail, Loader2, LogIn, AlertCircle, CheckCircle2, ArrowLeft, KeyRound } from 'lucide-react';
 
-type AuthView = 'selection' | 'login' | 'signup' | 'success';
+// Login-only: o cadastro deixou de existir aqui porque o acesso agora nasce
+// na compra pela Hotmart (o webhook cria a conta e envia um convite por e-mail
+// — veja ConfirmAccess.tsx). Quem chega nesta tela já é cliente; quem não é,
+// tem um link de volta pra Landing Page.
+type AuthView = 'login' | 'forgot';
 
 export default function AuthPage() {
-    const { signIn, signUp, resetPassword } = useAuth();
-    const [view, setView] = useState<AuthView>('selection');
+    const { signIn, resetPassword } = useAuth();
+    const [view, setView] = useState<AuthView>('login');
 
-    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    // Message logic is now handled by the 'success' view
 
     const [resetLoading, setResetLoading] = useState(false);
-    const [resetMessage, setResetMessage] = useState<string | null>(null);
+    const [resetSent, setResetSent] = useState(false);
 
-    const handleForgotPassword = async () => {
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
         setError(null);
-        setResetMessage(null);
+
+        try {
+            await signIn(email, password);
+        } catch (err: any) {
+            setError(err.message || 'Ocorreu um erro ao entrar. Verifique seu e-mail e senha.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleForgotPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError(null);
 
         if (!email.trim()) {
-            setError('Digite seu e-mail no campo acima e clique em "Esqueceu a senha?" de novo.');
+            setError('Digite seu e-mail para receber o link de redefinição.');
             return;
         }
 
         setResetLoading(true);
         try {
             await resetPassword(email.trim());
-            setResetMessage('Enviamos um link para redefinir sua senha. Verifique seu e-mail (e a caixa de spam).');
+            setResetSent(true);
         } catch (err: any) {
             setError(err.message || 'Não foi possível enviar o e-mail de redefinição.');
         } finally {
@@ -38,169 +54,28 @@ export default function AuthPage() {
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
+    const goToForgotPassword = () => {
         setError(null);
-
-        try {
-            if (view === 'login') {
-                await signIn(email, password);
-            } else if (view === 'signup') {
-                // --- FIELD VALIDATION ---
-                if (!name.trim()) {
-                    throw new Error("Por favor, informe seu nome completo.");
-                }
-
-                if (!email.trim()) {
-                    throw new Error("Por favor, informe seu e-mail.");
-                }
-
-                if (!password.trim()) {
-                    throw new Error("Por favor, crie uma senha.");
-                }
-
-                if (password.length < 6) {
-                    throw new Error("A senha deve ter pelo menos 6 caracteres.");
-                }
-
-                // --- EMAIL VALIDATION ---
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(email)) {
-                    throw new Error("Por favor, insira um e-mail válido.");
-                }
-
-                const disposableDomains = ['tempmail.com', '10minutemail.com', 'guerrillamail.com', 'mailinator.com', 'yopmail.com'];
-                const domain = email.split('@')[1];
-                if (disposableDomains.includes(domain)) {
-                    throw new Error("E-mails temporários não são permitidos. Use um e-mail real.");
-                }
-                // ------------------------
-
-                await signUp(email, password, name.trim());
-
-                // Pixel da Meta: CompleteRegistration = cadastro/trial iniciado.
-                // Ainda não é a assinatura paga (isso só existe quando o Asaas confirma o pagamento),
-                // mas é o sinal rápido que o algoritmo do Meta usa pra otimizar a entrega dos anúncios.
-                if (typeof (window as any).fbq === 'function') {
-                    (window as any).fbq('track', 'CompleteRegistration');
-                }
-
-                // Track Google Ads Conversion
-                if (typeof (window as any).gtag === 'function') {
-                    (window as any).gtag('event', 'conversion', {
-                        'send_to': 'AW-17945048072/qX9UCNCEgPsbEIjo7uxC'
-                    });
-                }
-
-                setView('success');
-            }
-        } catch (err: any) {
-            setError(err.message || 'Ocorreu um erro.');
-        } finally {
-            setLoading(false);
-        }
+        setResetSent(false);
+        setView('forgot');
     };
 
-    // --- RENDER HELPERS ---
+    const goToLogin = () => {
+        setError(null);
+        setResetSent(false);
+        setView('login');
+    };
 
-    const renderSelection = () => (
-        <div className="space-y-6">
-            <h2 className="text-center text-3xl font-extrabold text-gray-900">
-                Bem-vindo ao Simulador
+    const renderLogin = () => (
+        <form className="space-y-6" onSubmit={handleLogin}>
+            <h2 className="text-center text-2xl font-bold text-gray-900">
+                Acessar sua conta
             </h2>
-            <p className="text-center text-sm text-gray-600">
-                Escolha uma opção para continuar
-            </p>
-            <div className="space-y-4 pt-4">
-                <button
-                    onClick={() => setView('signup')}
-                    className="w-full flex items-center justify-center px-4 py-4 border border-transparent text-base font-medium rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 md:text-lg transition-colors shadow-sm"
-                >
-                    <UserPlus className="w-5 h-5 mr-3" />
-                    Inscrever-se Grátis
-                </button>
-                <button
-                    onClick={() => setView('login')}
-                    className="w-full flex items-center justify-center px-4 py-4 border-2 border-emerald-600 text-base font-medium rounded-xl text-emerald-600 bg-white hover:bg-emerald-50 md:text-lg transition-colors"
-                >
-                    <LogIn className="w-5 h-5 mr-3" />
-                    Fazer Login
-                </button>
-            </div>
-        </div>
-    );
-
-    const renderSuccess = () => (
-        <div className="text-center space-y-6 py-6">
-            <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <CheckCircle2 className="w-10 h-10 text-emerald-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">Cadastro Realizado!</h2>
-
-            <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100 text-left">
-                <p className="text-emerald-800 font-medium mb-1">Verifique seu e-mail</p>
-                <p className="text-sm text-emerald-700">
-                    Enviamos um link de confirmação para <strong>{email}</strong>.
-                </p>
-                <p className="text-sm text-emerald-700 mt-2 font-bold">
-                    ⚠️ Importante: Verifique também sua caixa de Spam ou Lixo Eletrônico.
-                </p>
-            </div>
-
-            <button
-                onClick={() => setView('login')}
-                className="w-full mt-6 flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors"
-            >
-                Entendi, ir para login
-                <ArrowRight className="w-4 h-4 ml-2" />
-            </button>
-        </div>
-    );
-
-    const renderForm = () => (
-        <form className="space-y-6" onSubmit={handleSubmit}>
-            <div className="flex items-center mb-6">
-                <button
-                    type="button"
-                    onClick={() => setView('selection')}
-                    className="text-sm text-gray-500 hover:text-emerald-600 flex items-center gap-1"
-                >
-                    ← Voltar
-                </button>
-                <h2 className="ml-auto text-xl font-bold text-gray-900">
-                    {view === 'login' ? 'Acessar Conta' : 'Criar Conta'}
-                </h2>
-            </div>
 
             {error && (
                 <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-red-500" />
+                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
                     <p className="text-sm text-red-700">{error}</p>
-                </div>
-            )}
-
-            {view === 'signup' && (
-                <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                        Nome Completo
-                    </label>
-                    <div className="mt-1 relative rounded-md shadow-sm">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <UserPlus className="h-5 w-5 text-gray-400" />
-                        </div>
-                        <input
-                            id="name"
-                            name="name"
-                            type="text"
-                            autoComplete="name"
-                            required
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-2.5 border"
-                            placeholder="Seu Nome"
-                        />
-                    </div>
                 </div>
             )}
 
@@ -220,16 +95,25 @@ export default function AuthPage() {
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-2.5 border"
+                        className="focus:ring-[#B7F34A] focus:border-[#0F2747] block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-2.5 border"
                         placeholder="seu@email.com"
                     />
                 </div>
             </div>
 
             <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                    Senha
-                </label>
+                <div className="flex items-center justify-between">
+                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                        Senha
+                    </label>
+                    <button
+                        type="button"
+                        onClick={goToForgotPassword}
+                        className="text-sm font-medium text-[#0F2747] hover:text-[#0B1D38] hover:underline"
+                    >
+                        Esqueceu a senha?
+                    </button>
+                </div>
                 <div className="mt-1 relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <Lock className="h-5 w-5 text-gray-400" />
@@ -242,101 +126,130 @@ export default function AuthPage() {
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-2.5 border"
+                        className="focus:ring-[#B7F34A] focus:border-[#0F2747] block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-2.5 border"
                         placeholder="••••••••"
                     />
                 </div>
             </div>
 
-            {view === 'signup' && (
-                <div className="flex items-start mb-4">
-                    <div className="flex items-center h-5">
-                        <input
-                            id="terms"
-                            name="terms"
-                            type="checkbox"
-                            required
-                            className="focus:ring-emerald-500 h-4 w-4 text-emerald-600 border-gray-300 rounded"
-                        />
-                    </div>
-                    <div className="ml-3 text-sm">
-                        <label htmlFor="terms" className="font-medium text-gray-700">
-                            Eu concordo com os <a href="/legal" target="_blank" className="text-emerald-600 hover:text-emerald-500">Termos e Política de Privacidade</a>
-                        </label>
-                    </div>
-                </div>
-            )}
-
             <div>
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#0F2747] hover:bg-[#0B1D38] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#B7F34A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {loading ? (
                         <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
                         <>
-                            {view === 'login' ? <LogIn className="w-4 h-4 mr-2" /> : <UserPlus className="w-4 h-4 mr-2" />}
-                            {view === 'login' ? 'Entrar' : 'Criar Conta'}
+                            <LogIn className="w-4 h-4 mr-2" />
+                            Entrar
                         </>
                     )}
                 </button>
             </div>
 
-            <div className="mt-6 text-center">
-                <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-gray-300" />
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-white text-gray-500">
-                            {view === 'login' ? 'Não tem uma conta?' : 'Já tem uma conta?'}
-                        </span>
-                    </div>
-                </div>
-                <button
-                    type="button"
-                    onClick={() => setView(view === 'login' ? 'signup' : 'login')}
-                    className="mt-4 font-medium text-emerald-600 hover:text-emerald-500"
-                >
-                    {view === 'login' ? 'Criar conta grátis' : 'Fazer Login'}
-                </button>
+            <div className="pt-2 text-center text-sm text-gray-500">
+                Ainda não é cliente?{' '}
+                <a href="/" className="font-medium text-[#0F2747] hover:text-[#0B1D38] hover:underline">
+                    Conheça o Simulador 60 Segundos
+                </a>
             </div>
-
-            {view === 'login' && (
-                <div className="mt-2 text-center text-sm">
-                    {resetMessage ? (
-                        <p className="text-emerald-600">{resetMessage}</p>
-                    ) : (
-                        <button
-                            type="button"
-                            onClick={handleForgotPassword}
-                            disabled={resetLoading}
-                            className="text-gray-400 hover:text-emerald-600 transition-colors disabled:opacity-50"
-                        >
-                            {resetLoading ? 'Enviando...' : 'Esqueceu a senha?'}
-                        </button>
-                    )}
-                </div>
-            )}
         </form>
+    );
+
+    const renderForgotPassword = () => (
+        <div className="space-y-6">
+            <button
+                type="button"
+                onClick={goToLogin}
+                className="flex items-center gap-1 text-sm text-gray-500 hover:text-[#0F2747] transition-colors"
+            >
+                <ArrowLeft className="w-4 h-4" /> Voltar para o login
+            </button>
+
+            {resetSent ? (
+                <div className="text-center space-y-4 py-2">
+                    <div className="w-16 h-16 bg-[#E1E8F0] rounded-full flex items-center justify-center mx-auto">
+                        <CheckCircle2 className="w-8 h-8 text-[#0F2747]" />
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-900">Link enviado!</h2>
+                    <p className="text-sm text-gray-600">
+                        Enviamos um link de redefinição de senha para <strong>{email}</strong>.
+                        Verifique sua caixa de entrada (e também a caixa de spam).
+                    </p>
+                    <button
+                        onClick={goToLogin}
+                        className="w-full mt-2 py-2.5 px-4 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                        Voltar para o login
+                    </button>
+                </div>
+            ) : (
+                <form className="space-y-6" onSubmit={handleForgotPassword}>
+                    <div className="text-center space-y-2">
+                        <div className="w-14 h-14 bg-[#E1E8F0] rounded-full flex items-center justify-center mx-auto">
+                            <KeyRound className="w-7 h-7 text-[#0F2747]" />
+                        </div>
+                        <h2 className="text-xl font-bold text-gray-900">Redefinir senha</h2>
+                        <p className="text-sm text-gray-600">
+                            Digite o e-mail da sua conta e enviaremos um link para você criar uma nova senha.
+                        </p>
+                    </div>
+
+                    {error && (
+                        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md flex items-start gap-3">
+                            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                            <p className="text-sm text-red-700">{error}</p>
+                        </div>
+                    )}
+
+                    <div>
+                        <label htmlFor="reset-email" className="block text-sm font-medium text-gray-700">
+                            Email
+                        </label>
+                        <div className="mt-1 relative rounded-md shadow-sm">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Mail className="h-5 w-5 text-gray-400" />
+                            </div>
+                            <input
+                                id="reset-email"
+                                name="email"
+                                type="email"
+                                autoComplete="email"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="focus:ring-[#B7F34A] focus:border-[#0F2747] block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-2.5 border"
+                                placeholder="seu@email.com"
+                            />
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={resetLoading}
+                        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#0F2747] hover:bg-[#0B1D38] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#B7F34A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {resetLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Enviar link de redefinição'}
+                    </button>
+                </form>
+            )}
+        </div>
     );
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-emerald-600 p-3 rounded-xl w-14 h-14 mx-auto flex items-center justify-center">
+                <div className="bg-[#0F2747] p-3 rounded-xl w-14 h-14 mx-auto flex items-center justify-center">
                     <Lock className="w-8 h-8 text-white" />
                 </div>
-                {/* Title is now inside the specific views or header logic */}
             </div>
 
             <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-gray-100">
-                    {view === 'selection' && renderSelection()}
-                    {view === 'success' && renderSuccess()}
-                    {(view === 'login' || view === 'signup') && renderForm()}
+                    {view === 'login' && renderLogin()}
+                    {view === 'forgot' && renderForgotPassword()}
                 </div>
             </div>
         </div>

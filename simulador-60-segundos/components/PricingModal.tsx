@@ -77,20 +77,20 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
           </div>
 
           {/* Plus */}
-          <div className="p-6 border-2 border-emerald-500 rounded-xl bg-white relative">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-bold">RECOMENDADO</div>
+          <div className="p-6 border-2 border-[#B7F34A] rounded-xl bg-white relative">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#B7F34A] text-[#0F2747] px-3 py-1 rounded-full text-xs font-bold">RECOMENDADO</div>
             <h3 className="font-bold text-xl">Profissional</h3>
             <p className="text-2xl font-bold mt-2">R$ 99,00<span className="text-sm font-normal text-gray-500">/ano</span></p>
-            <p className="text-xs text-center text-emerald-600 font-medium mt-1 mb-4">Renovação Automática</p>
+            <p className="text-xs text-center text-[#0F2747] font-medium mt-1 mb-4">Renovação Automática</p>
             <ul className="mt-4 space-y-2 text-sm text-gray-600">
-              <li className="flex gap-2"><Check className="w-4 h-4 text-emerald-500" /> Uso Ilimitado</li>
-              <li className="flex gap-2"><Check className="w-4 h-4 text-emerald-500" /> Todas calculadoras</li>
-              <li className="flex gap-2"><Check className="w-4 h-4 text-emerald-500" /> Envio por WhatsApp e PDF</li>
+              <li className="flex gap-2"><Check className="w-4 h-4 text-[#0F2747]" /> Uso Ilimitado</li>
+              <li className="flex gap-2"><Check className="w-4 h-4 text-[#0F2747]" /> Todas calculadoras</li>
+              <li className="flex gap-2"><Check className="w-4 h-4 text-[#0F2747]" /> Envio por WhatsApp e PDF</li>
             </ul>
 
             <button
               onClick={handleSubscribe}
-              className="w-full mt-6 py-2 bg-emerald-600 text-white font-bold rounded hover:bg-emerald-700 flex justify-center items-center gap-2"
+              className="w-full mt-6 py-2 bg-[#0F2747] text-white font-bold rounded hover:bg-[#0B1D38] flex justify-center items-center gap-2"
             >
               Assinar Agora
             </button>

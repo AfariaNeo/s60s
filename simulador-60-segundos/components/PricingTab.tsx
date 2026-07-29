@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Tag, DollarSign, ArrowRight, Percent, Minus, Plus, Wallet, AlertCircle } from 'lucide-react';
+import { Tag, DollarSign, ArrowRight, Percent, Minus, Plus, Wallet, AlertCircle, Printer, MessageCircle } from 'lucide-react';
 import { PricingParams, PricingResult } from '../types';
 import { formatCurrency } from '../utils/finance';
 
@@ -9,14 +9,30 @@ interface PricingTabProps {
     setParams: React.Dispatch<React.SetStateAction<PricingParams>>;
     results: PricingResult | null;
     onCalculate: () => void;
+    onReset?: () => void;
+    onPrint?: () => void;
+    onShare?: (text: string) => void;
 }
 
 export default function PricingTab({
     params,
     setParams,
     results,
-    onCalculate
+    onCalculate,
+    onReset,
+    onPrint,
+    onShare
 }: PricingTabProps) {
+
+    const generateShareText = () => {
+        if (!results) return '';
+        return `*Simulação de Precificação*\n\n` +
+            `${params.mode === 'calculate_listing_price' ? '💰 *Valor Líquido Desejado:*' : '🏷️ *Preço de Anúncio:*'} ${formatCurrency(params.inputValue)}\n` +
+            `📊 *Comissão:* ${params.commissionPercent}%\n` +
+            `📉 *Margem de Negociação:* ${params.negotiationMarginPercent}%\n\n` +
+            `${params.mode === 'calculate_listing_price' ? '🏷️ *Preço Recomendado de Anúncio:*' : '💰 *Valor Líquido no Bolso:*'} ${formatCurrency(params.mode === 'calculate_listing_price' ? results.listingPrice : results.netValue)}\n\n` +
+            `_Simulação aproximada gerada pelo Simulador 60 Segundos._`;
+    };
 
     // Local state for formatted display
     const [inputValueDisplay, setInputValueDisplay] = useState('');
@@ -44,7 +60,13 @@ export default function PricingTab({
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         if (name === 'mode') {
-            setParams(prev => ({ ...prev, [name]: value as any }));
+            // Trocar o modelo de cálculo muda o que o valor digitado representa
+            // (líquido desejado vs. preço de anúncio) — mantê-lo geraria uma conta
+            // errada silenciosamente. Por isso limpamos o campo e o resultado
+            // anterior, forçando o preenchimento de um novo valor.
+            setInputValueDisplay('');
+            setParams(prev => ({ ...prev, [name]: value as any, inputValue: 0 }));
+            onReset?.();
             return;
         }
 
@@ -77,7 +99,7 @@ export default function PricingTab({
             <div className="lg:col-span-5 space-y-6">
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                     <h2 className="text-lg font-semibold text-gray-800 mb-5 flex items-center gap-2">
-                        <Tag className="w-5 h-5 text-emerald-600" />
+                        <Tag className="w-5 h-5 text-[#0F2747]" />
                         Precificação Inteligente
                     </h2>
 
@@ -89,7 +111,7 @@ export default function PricingTab({
                                 name="mode"
                                 value={params.mode}
                                 onChange={handleInputChange}
-                                className="block w-full px-3 py-3 border border-gray-300 rounded-lg bg-white text-sm font-medium focus:ring-emerald-500 hover:bg-gray-50 transition-colors cursor-pointer"
+                                className="block w-full px-3 py-3 border border-gray-300 rounded-lg bg-white text-sm font-medium focus:ring-[#B7F34A] hover:bg-gray-50 transition-colors cursor-pointer"
                             >
                                 <option value="calculate_listing_price">Tenho o Valor Líquido, quanto devo anunciar?</option>
                                 <option value="calculate_net_value">Tenho o Preço de Anúncio, quanto sobra?</option>
@@ -106,7 +128,7 @@ export default function PricingTab({
                                     type="text"
                                     value={inputValueDisplay}
                                     onChange={handleInputDisplayChange}
-                                    className="block w-full pl-10 px-3 py-3 border border-gray-300 rounded-lg focus:ring-emerald-500 font-medium text-lg"
+                                    className="block w-full pl-10 px-3 py-3 border border-gray-300 rounded-lg focus:ring-[#B7F34A] font-medium text-lg"
                                     placeholder="0,00"
                                 />
                             </div>
@@ -122,7 +144,7 @@ export default function PricingTab({
                                         name="commissionPercent"
                                         value={params.commissionPercent ?? ''}
                                         onChange={handleInputChange}
-                                        className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-emerald-500"
+                                        className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-[#B7F34A]"
                                         placeholder="0"
                                     />
                                 </div>
@@ -136,7 +158,7 @@ export default function PricingTab({
                                         name="negotiationMarginPercent"
                                         value={params.negotiationMarginPercent ?? ''}
                                         onChange={handleInputChange}
-                                        className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-emerald-500"
+                                        className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-[#B7F34A]"
                                         placeholder="0"
                                     />
                                 </div>
@@ -150,7 +172,7 @@ export default function PricingTab({
 
                     <button
                         onClick={onCalculate}
-                        className="w-full mt-6 bg-emerald-600 text-white font-bold py-3 rounded-lg hover:bg-emerald-700 transition-all"
+                        className="w-full mt-6 bg-[#0F2747] text-white font-bold py-3 rounded-lg hover:bg-[#0B1D38] transition-all"
                     >
                         Calcular Preço
                     </button>
@@ -161,9 +183,24 @@ export default function PricingTab({
             <div className="lg:col-span-7">
                 {results ? (
                     <div className="space-y-6">
+                        {(onPrint || onShare) && (
+                            <div className="flex justify-end gap-2">
+                                {onPrint && (
+                                    <button onClick={onPrint} className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50 text-gray-700 font-medium">
+                                        <Printer className="w-4 h-4" /> PDF / Imprimir
+                                    </button>
+                                )}
+                                {onShare && (
+                                    <button onClick={() => onShare(generateShareText())} className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium">
+                                        <MessageCircle className="w-4 h-4" /> Enviar WhatsApp
+                                    </button>
+                                )}
+                            </div>
+                        )}
+
                         {/* Main Result */}
                         <div className="bg-white rounded-2xl shadow-sm border p-4 md:p-8 text-center relative overflow-hidden">
-                            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 to-emerald-600"></div>
+                            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#0F2747] to-[#B7F34A]"></div>
 
                             <h3 className="text-gray-500 uppercase tracking-wide text-sm font-bold mb-3 flex justify-center items-center gap-2">
                                 {params.mode === 'calculate_listing_price' ? <Tag className="w-4 h-4" /> : <Wallet className="w-4 h-4" />}
@@ -175,7 +212,7 @@ export default function PricingTab({
                             </p>
 
                             {params.mode === 'calculate_listing_price' && (
-                                <div className="inline-block bg-emerald-50 text-emerald-700 px-4 py-2 rounded-full text-sm font-medium border border-emerald-100">
+                                <div className="inline-block bg-[#F1F5F9] text-[#0F2747] px-4 py-2 rounded-full text-sm font-medium border border-[#E1E8F0]">
                                     Anuncie por este valor para garantir seus {formatCurrency(params.inputValue, 0)} limpos.
                                 </div>
                             )}
@@ -184,7 +221,7 @@ export default function PricingTab({
                         {/* Breakdown */}
                         <div className="bg-white rounded-2xl shadow-sm border p-6">
                             <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2">
-                                <DollarSign className="w-5 h-5 text-emerald-600" />
+                                <DollarSign className="w-5 h-5 text-[#0F2747]" />
                                 Detalhamento Financeiro
                             </h3>
 
@@ -225,11 +262,11 @@ export default function PricingTab({
                                 </div>
 
                                 {/* Bottom Item (Net Value) */}
-                                <div className="flex justify-between items-center p-4 bg-emerald-50 border border-emerald-100 rounded-lg">
-                                    <span className="flex items-center gap-2 text-emerald-800 font-bold">
+                                <div className="flex justify-between items-center p-4 bg-[#F1F5F9] border border-[#E1E8F0] rounded-lg">
+                                    <span className="flex items-center gap-2 text-[#081426] font-bold">
                                         <Wallet className="w-5 h-5" /> Valor Líquido Final
                                     </span>
-                                    <span className="font-extrabold text-emerald-700 text-2xl">{formatCurrency(results.netValue, 0)}</span>
+                                    <span className="font-extrabold text-[#0F2747] text-2xl">{formatCurrency(results.netValue, 0)}</span>
                                 </div>
                             </div>
                         </div>

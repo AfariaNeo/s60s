@@ -122,7 +122,7 @@ export default function FinancingTab({
             <div className="lg:col-span-4 space-y-6 print:hidden">
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                     <h2 className="text-lg font-semibold text-gray-800 mb-5 flex items-center gap-2">
-                        <DollarSign className="w-5 h-5 text-emerald-600" />
+                        <DollarSign className="w-5 h-5 text-[#0F2747]" />
                         Dados do Financiamento
                     </h2>
                     <div className="space-y-5">
@@ -135,7 +135,7 @@ export default function FinancingTab({
                                     type="text"
                                     value={propertyValueDisplay}
                                     onChange={handlePropertyChange}
-                                    className="block w-full pl-10 px-3 py-3 border border-gray-300 rounded-lg focus:ring-emerald-500"
+                                    className="block w-full pl-10 px-3 py-3 border border-gray-300 rounded-lg focus:ring-[#B7F34A]"
                                     placeholder="0,00"
                                 />
                             </div>
@@ -154,7 +154,7 @@ export default function FinancingTab({
                                 max="90"
                                 value={params.downPaymentPercent || ''}
                                 onChange={handleInputChange}
-                                className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-emerald-500"
+                                className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-[#B7F34A]"
                             />
                         </div>
 
@@ -189,7 +189,7 @@ export default function FinancingTab({
                     </div>
                     <button
                         onClick={validateAndCalculate}
-                        className="w-full mt-6 bg-emerald-600 text-white font-bold py-3 rounded-lg hover:bg-emerald-700 transition-all"
+                        className="w-full mt-6 bg-[#0F2747] text-white font-bold py-3 rounded-lg hover:bg-[#0B1D38] transition-all"
                     >
                         Calcular
                     </button>
@@ -212,10 +212,10 @@ export default function FinancingTab({
 
                         <div className="grid md:grid-cols-2 gap-6 print:gap-4">
                             {/* 6. Card SAC Completo */}
-                            <div className="bg-white rounded-2xl shadow-sm border p-6 border-l-4 border-l-emerald-500 print:shadow-none print:border">
+                            <div className="bg-white rounded-2xl shadow-sm border p-6 border-l-4 border-l-[#0F2747] print:shadow-none print:border">
                                 <div className="flex items-center gap-2 mb-4">
-                                    <TrendingDown className="w-5 h-5 text-emerald-600" />
-                                    <h3 className="font-bold text-lg text-emerald-900">SAC (Decrescente)</h3>
+                                    <TrendingDown className="w-5 h-5 text-[#0F2747]" />
+                                    <h3 className="font-bold text-lg text-[#0F2747]">SAC (Decrescente)</h3>
                                 </div>
 
                                 <div className="space-y-3">
@@ -278,7 +278,7 @@ export default function FinancingTab({
 }
 
 // Subcomponente para linhas de resultado
-function ResultRow({ label, value, highlight = false, highlightColor = "text-emerald-600", bold = false, small = false }: { label: string, value: string, highlight?: boolean, highlightColor?: string, bold?: boolean, small?: boolean }) {
+function ResultRow({ label, value, highlight = false, highlightColor = "text-[#0F2747]", bold = false, small = false }: { label: string, value: string, highlight?: boolean, highlightColor?: string, bold?: boolean, small?: boolean }) {
     return (
         <div className={`flex justify-between items-center ${small ? 'text-sm' : ''}`}>
             <span className={`${small ? 'text-gray-500' : 'text-gray-600'}`}>{label}</span>

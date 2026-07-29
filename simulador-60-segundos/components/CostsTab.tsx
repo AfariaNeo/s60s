@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ScrollText, DollarSign, Building, Percent, Landmark, AlertCircle } from 'lucide-react';
+import { ScrollText, DollarSign, Building, Percent, Landmark, AlertCircle, Printer, MessageCircle } from 'lucide-react';
 import { PurchaseCostParams, PurchaseCostResult } from '../types';
 import { formatCurrency } from '../utils/finance';
 
@@ -9,14 +9,29 @@ interface CostsTabProps {
     setParams: React.Dispatch<React.SetStateAction<PurchaseCostParams>>;
     results: PurchaseCostResult | null;
     onCalculate: () => void;
+    onPrint?: () => void;
+    onShare?: (text: string) => void;
 }
 
 export default function CostsTab({
     params,
     setParams,
     results,
-    onCalculate
+    onCalculate,
+    onPrint,
+    onShare
 }: CostsTabProps) {
+
+    const generateShareText = () => {
+        if (!results) return '';
+        return `*Simulação de Custos de Compra*\n\n` +
+            `💰 *Valor do Imóvel:* ${formatCurrency(params.propertyValue)}\n` +
+            `📉 *Entrada/Sinal:* ${params.downPaymentPercent}% (${formatCurrency(results.downPaymentValue)})\n` +
+            `🏛️ *ITBI:* ${params.itbiPercent}% (${formatCurrency(results.itbiValue)})\n` +
+            `📜 *Registro/Cartório:* ${params.registryPercent}% (${formatCurrency(results.registryValue)})\n\n` +
+            `*Desembolso Inicial Total: ${formatCurrency(results.totalCostValue)}*\n\n` +
+            `_Simulação aproximada gerada pelo Simulador 60 Segundos._`;
+    };
 
     // Local state for formatted display
     const [propertyValueDisplay, setPropertyValueDisplay] = useState('');
@@ -73,7 +88,7 @@ export default function CostsTab({
             <div className="lg:col-span-4 space-y-6">
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                     <h2 className="text-lg font-semibold text-gray-800 mb-5 flex items-center gap-2">
-                        <ScrollText className="w-5 h-5 text-emerald-600" />
+                        <ScrollText className="w-5 h-5 text-[#0F2747]" />
                         Custos de Compra e Venda
                     </h2>
 
@@ -86,7 +101,7 @@ export default function CostsTab({
                                     type="text"
                                     value={propertyValueDisplay}
                                     onChange={handlePropertyChange}
-                                    className="block w-full pl-10 px-3 py-3 border border-gray-300 rounded-lg focus:ring-emerald-500 font-medium text-lg"
+                                    className="block w-full pl-10 px-3 py-3 border border-gray-300 rounded-lg focus:ring-[#B7F34A] font-medium text-lg"
                                     placeholder="0,00"
                                 />
                             </div>
@@ -101,7 +116,7 @@ export default function CostsTab({
                                     name="downPaymentPercent"
                                     value={params.downPaymentPercent || ''}
                                     onChange={handleInputChange}
-                                    className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-emerald-500"
+                                    className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-[#B7F34A]"
                                     placeholder="20%"
                                 />
                             </div>
@@ -117,7 +132,7 @@ export default function CostsTab({
                                         name="itbiPercent"
                                         value={params.itbiPercent || ''}
                                         onChange={handleInputChange}
-                                        className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-emerald-500"
+                                        className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-[#B7F34A]"
                                         placeholder="3%"
                                     />
                                 </div>
@@ -145,7 +160,7 @@ export default function CostsTab({
 
                     <button
                         onClick={onCalculate}
-                        className="w-full mt-6 bg-emerald-600 text-white font-bold py-3 rounded-lg hover:bg-emerald-700 transition-all"
+                        className="w-full mt-6 bg-[#0F2747] text-white font-bold py-3 rounded-lg hover:bg-[#0B1D38] transition-all"
                     >
                         Calcular Custos
                     </button>
@@ -157,16 +172,31 @@ export default function CostsTab({
                 {results ? (
                     <div className="space-y-6">
 
+                        {(onPrint || onShare) && (
+                            <div className="flex justify-end gap-2">
+                                {onPrint && (
+                                    <button onClick={onPrint} className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50 text-gray-700 font-medium">
+                                        <Printer className="w-4 h-4" /> PDF / Imprimir
+                                    </button>
+                                )}
+                                {onShare && (
+                                    <button onClick={() => onShare(generateShareText())} className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium">
+                                        <MessageCircle className="w-4 h-4" /> Enviar WhatsApp
+                                    </button>
+                                )}
+                            </div>
+                        )}
+
                         {/* Total Inicial Necessário */}
                         <div className="bg-white rounded-2xl shadow-sm border p-4 md:p-8 text-center relative overflow-hidden">
-                            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 to-emerald-600"></div>
+                            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#0F2747] to-[#B7F34A]"></div>
                             <h3 className="text-gray-500 uppercase tracking-wide text-sm font-bold mb-3 flex justify-center items-center gap-2">
                                 <DollarSign className="w-4 h-4" /> Desembolso Inicial Total
                             </h3>
                             <p className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-2 tracking-tight">
                                 {formatCurrency(results.totalCostValue)}
                             </p>
-                            <p className="text-emerald-600 font-medium">
+                            <p className="text-[#0F2747] font-medium">
                                 Isso inclui Entrada ({params.downPaymentPercent}%) + Documentação
                             </p>
                         </div>
@@ -175,8 +205,8 @@ export default function CostsTab({
                             {/* Card Entrada */}
                             <div className="md:col-span-2 bg-white rounded-2xl shadow-sm border p-6 flex flex-col md:flex-row items-center justify-between gap-4">
                                 <div className="flex items-center gap-4">
-                                    <div className="bg-emerald-100 p-3 rounded-full">
-                                        <DollarSign className="w-6 h-6 text-emerald-600" />
+                                    <div className="bg-[#E1E8F0] p-3 rounded-full">
+                                        <DollarSign className="w-6 h-6 text-[#0F2747]" />
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-gray-800 text-lg">Entrada / Sinal</h3>

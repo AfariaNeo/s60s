@@ -252,12 +252,13 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                             className="h-10 w-auto object-contain"
                         />
                         <h1 className="text-xl font-bold text-gray-900 tracking-tight hidden sm:block">Simulador 60 Segundos</h1>
+                        <h1 className="text-sm font-bold text-gray-900 tracking-tight sm:hidden">Simulador 60s</h1>
                     </div>
 
                     <div className="flex items-center gap-3 sm:gap-4">
                         <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1 ${
                             userPlan === 'plus'
-                                ? 'bg-emerald-100 text-emerald-800'
+                                ? 'bg-[#E1E8F0] text-[#0F2747]'
                                 : isOnTrial && daysRemaining <= 5
                                     ? 'bg-amber-100 text-amber-800'
                                     : isOnTrial
@@ -289,12 +290,12 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={() => setIsProfileModalOpen(true)}
-                                className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors focus:outline-none"
+                                className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-[#0F2747] transition-colors focus:outline-none"
                             >
                                 <span className="hidden md:block max-w-[150px] truncate">
                                     {userName}
                                 </span>
-                                <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold border border-emerald-200">
+                                <div className="w-8 h-8 rounded-full bg-[#E1E8F0] flex items-center justify-center text-[#0F2747] font-bold border border-[#C7D4E3]">
                                     {userName.charAt(0).toUpperCase()}
                                 </div>
                             </button>
@@ -333,7 +334,7 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                                     handleTabChange(tab.id as Tab);
                                 }}
                                 className={`flex items-center justify-center sm:justify-start gap-2 px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${activeTab === tab.id
-                                    ? 'bg-emerald-600 text-white shadow-md'
+                                    ? 'bg-[#0F2747] text-white shadow-md'
                                     : tab.locked
                                         ? 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
                                         : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
@@ -376,39 +377,66 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
 
                 {/* --- CONTEÚDO TAB COMISSÃO --- */}
                 {activeTab === 'commission' && (
-                    <div className="max-w-4xl mx-auto">
-                        <CommissionTab
-                            params={commissionParams}
-                            setParams={setCommissionParams}
-                            results={commissionResults}
-                            onCalculate={handleCommissionCalculate}
-                            onReset={() => setCommissionResults(null)}
-                        />
-                    </div>
+                    <CommissionTab
+                        params={commissionParams}
+                        setParams={setCommissionParams}
+                        results={commissionResults}
+                        onCalculate={handleCommissionCalculate}
+                        onReset={() => setCommissionResults(null)}
+                    />
                 )}
 
                 {/* --- CONTEÚDO TAB PRECIFICAÇÃO --- */}
                 {activeTab === 'pricing' && (
-                    <div className="max-w-4xl mx-auto">
-                        <PricingTab
-                            params={pricingParams}
-                            setParams={setPricingParams}
-                            results={pricingResults}
-                            onCalculate={handlePricingCalculate}
-                        />
-                    </div>
+                    <PricingTab
+                        params={pricingParams}
+                        setParams={setPricingParams}
+                        results={pricingResults}
+                        onCalculate={handlePricingCalculate}
+                        onReset={() => setPricingResults(null)}
+                        onPrint={() => {
+                            if (!hasFullAccess) {
+                                openPricingModal('trial_expired');
+                                return;
+                            }
+                            track('button_click', 'print_clicked', { from: 'pricing_results' }, 'PricingTab');
+                            window.print();
+                        }}
+                        onShare={(text) => {
+                            if (!hasFullAccess) {
+                                openPricingModal('trial_expired');
+                                return;
+                            }
+                            track('button_click', 'whatsapp_share_clicked', { from: 'pricing_results' }, 'PricingTab');
+                            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+                        }}
+                    />
                 )}
 
                 {/* --- CONTEÚDO TAB CUSTOS --- */}
                 {activeTab === 'costs' && (
-                    <div className="max-w-4xl mx-auto">
-                        <CostsTab
-                            params={costParams}
-                            setParams={setCostParams}
-                            results={costResults}
-                            onCalculate={handleCostsCalculate}
-                        />
-                    </div>
+                    <CostsTab
+                        params={costParams}
+                        setParams={setCostParams}
+                        results={costResults}
+                        onCalculate={handleCostsCalculate}
+                        onPrint={() => {
+                            if (!hasFullAccess) {
+                                openPricingModal('trial_expired');
+                                return;
+                            }
+                            track('button_click', 'print_clicked', { from: 'costs_results' }, 'CostsTab');
+                            window.print();
+                        }}
+                        onShare={(text) => {
+                            if (!hasFullAccess) {
+                                openPricingModal('trial_expired');
+                                return;
+                            }
+                            track('button_click', 'whatsapp_share_clicked', { from: 'costs_results' }, 'CostsTab');
+                            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+                        }}
+                    />
                 )}
 
             </main >

@@ -11,7 +11,7 @@ interface StatCardProps {
 const StatCard: React.FC<StatCardProps> = ({ label, value, subValue, highlight, color = 'slate' }) => {
   const colorClasses = {
     blue: 'border-l-blue-500 bg-blue-50',
-    emerald: 'border-l-emerald-500 bg-emerald-50',
+    emerald: 'border-l-[#0F2747] bg-[#F1F5F9]',
     indigo: 'border-l-indigo-500 bg-indigo-50',
     slate: 'border-l-slate-500 bg-slate-50',
   };

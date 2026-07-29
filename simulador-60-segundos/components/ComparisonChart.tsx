@@ -38,8 +38,8 @@ const ComparisonChart: React.FC<ComparisonChartProps> = ({ sacData, priceData })
         >
           <defs>
             <linearGradient id="colorSac" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/>
-              <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+              <stop offset="5%" stopColor="#0F2747" stopOpacity={0.15}/>
+              <stop offset="95%" stopColor="#0F2747" stopOpacity={0}/>
             </linearGradient>
             <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/>
@@ -67,9 +67,9 @@ const ComparisonChart: React.FC<ComparisonChartProps> = ({ sacData, priceData })
           <Legend wrapperStyle={{ fontSize: '12px', marginTop: '10px' }}/>
           <Area 
             type="monotone" 
-            dataKey="sacInstallment" 
-            name="Parcela SAC" 
-            stroke="#10b981" 
+            dataKey="sacInstallment"
+            name="Parcela SAC"
+            stroke="#0F2747"
             strokeWidth={2}
             fill="url(#colorSac)" 
           />

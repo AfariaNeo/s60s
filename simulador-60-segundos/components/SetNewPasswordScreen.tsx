@@ -49,12 +49,12 @@ export default function SetNewPasswordScreen({ onSubmit }: SetNewPasswordScreenP
         return (
             <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
                 <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-4">
-                    <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto">
-                        <CheckCircle2 className="w-10 h-10 text-emerald-600" />
+                    <div className="w-20 h-20 bg-[#E1E8F0] rounded-full flex items-center justify-center mx-auto">
+                        <CheckCircle2 className="w-10 h-10 text-[#0F2747]" />
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900">Senha definida!</h2>
                     <p className="text-gray-600">Carregando sua conta...</p>
-                    <Loader2 className="w-6 h-6 text-emerald-600 animate-spin mx-auto" />
+                    <Loader2 className="w-6 h-6 text-[#0F2747] animate-spin mx-auto" />
                 </div>
             </div>
         );
@@ -63,7 +63,7 @@ export default function SetNewPasswordScreen({ onSubmit }: SetNewPasswordScreenP
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-emerald-600 p-3 rounded-xl w-14 h-14 mx-auto flex items-center justify-center">
+                <div className="bg-[#0F2747] p-3 rounded-xl w-14 h-14 mx-auto flex items-center justify-center">
                     <Lock className="w-8 h-8 text-white" />
                 </div>
             </div>
@@ -100,7 +100,7 @@ export default function SetNewPasswordScreen({ onSubmit }: SetNewPasswordScreenP
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-2.5 border"
+                                    className="focus:ring-[#B7F34A] focus:border-[#0F2747] block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-2.5 border"
                                     placeholder="••••••••"
                                 />
                             </div>
@@ -121,7 +121,7 @@ export default function SetNewPasswordScreen({ onSubmit }: SetNewPasswordScreenP
                                     required
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
-                                    className="focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-2.5 border"
+                                    className="focus:ring-[#B7F34A] focus:border-[#0F2747] block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-2.5 border"
                                     placeholder="••••••••"
                                 />
                             </div>
@@ -130,7 +130,7 @@ export default function SetNewPasswordScreen({ onSubmit }: SetNewPasswordScreenP
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#0F2747] hover:bg-[#0B1D38] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#B7F34A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Criar senha e entrar'}
                         </button>

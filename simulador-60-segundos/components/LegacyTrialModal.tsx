@@ -23,8 +23,8 @@ const LegacyTrialModal: React.FC<LegacyTrialModalProps> = ({ isOpen, onConfirm, 
       <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 animate-in fade-in zoom-in duration-200">
         {/* Icon */}
         <div className="flex justify-center mb-5">
-          <div className="bg-emerald-100 p-4 rounded-full">
-            <Gift className="w-10 h-10 text-emerald-600" />
+          <div className="bg-[#E1E8F0] p-4 rounded-full">
+            <Gift className="w-10 h-10 text-[#0F2747]" />
           </div>
         </div>
 
@@ -37,21 +37,21 @@ const LegacyTrialModal: React.FC<LegacyTrialModalProps> = ({ isOpen, onConfirm, 
         </p>
 
         {/* Rules */}
-        <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-5 mb-6 space-y-3">
+        <div className="bg-[#F1F5F9] border border-[#E1E8F0] rounded-xl p-5 mb-6 space-y-3">
           <div className="flex items-start gap-3">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+            <CheckCircle2 className="w-5 h-5 text-[#0F2747] mt-0.5 flex-shrink-0" />
             <p className="text-sm text-gray-700">
               Você tem <strong>acesso completo e ilimitado</strong> por 7 dias a partir de hoje.
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+            <CheckCircle2 className="w-5 h-5 text-[#0F2747] mt-0.5 flex-shrink-0" />
             <p className="text-sm text-gray-700">
               Após esse período, o <strong>cálculo de Comissão permanece gratuito</strong> para sempre.
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+            <CheckCircle2 className="w-5 h-5 text-[#0F2747] mt-0.5 flex-shrink-0" />
             <p className="text-sm text-gray-700">
               Financiamento, Precificação e Custos de Compra exigirão o plano <strong>Plus</strong> após o trial.
             </p>
@@ -69,7 +69,7 @@ const LegacyTrialModal: React.FC<LegacyTrialModalProps> = ({ isOpen, onConfirm, 
         {/* CTA */}
         <button
           onClick={onConfirm}
-          className="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-200"
+          className="w-full py-3 bg-[#0F2747] text-white font-bold rounded-xl hover:bg-[#0B1D38] transition-colors shadow-lg shadow-[#C7D4E3]"
         >
           Entendido — Continuar usando
         </button>
