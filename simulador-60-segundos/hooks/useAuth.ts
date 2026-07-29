@@ -85,11 +85,25 @@ export function useAuth() {
     // Dispara o e-mail de "esqueci minha senha" — usa o mesmo caminho de recovery
     // do Supabase, então quem clicar no link cai na mesma tela de "definir senha"
     // usada pelo convite da Hotmart.
+    // O redirectTo aqui só é usado como fallback do link padrão do Supabase — o e-mail
+    // de verdade (template customizado no painel do Supabase) deve levar direto pra
+    // /confirmar-acesso com o token_hash, sem passar pelo endpoint automático deles.
     const resetPassword = async (email: string) => {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: `${window.location.origin}/`,
+            redirectTo: `${window.location.origin}/confirmar-acesso`,
         });
         if (error) throw error;
+    };
+
+    // Troca o token_hash (que vem por query string, não mais pelo link automático
+    // do Supabase) por uma sessão de verdade. Isso é chamado só pela nossa própria
+    // página /confirmar-acesso, via JavaScript — diferente do link antigo, que era
+    // consumido automaticamente por um simples GET (o que permitia que scanners de
+    // segurança de e-mail "gastassem" o link sozinhos, antes da pessoa clicar).
+    const confirmToken = async (tokenHash: string, type: 'recovery' | 'invite' | 'email' | 'signup') => {
+        const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: type as any });
+        if (error) throw error;
+        setPasswordRecoveryMode(true);
     };
 
     // Define a senha nova depois que a pessoa entrou aqui via link de convite/recovery.
@@ -101,5 +115,5 @@ export function useAuth() {
         window.history.replaceState(null, '', window.location.pathname);
     };
 
-    return { user, loading, passwordRecoveryMode, signIn, signUp, signOut, resetPassword, updatePassword };
+    return { user, loading, passwordRecoveryMode, signIn, signUp, signOut, resetPassword, updatePassword, confirmToken };
 }

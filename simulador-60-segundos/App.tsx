@@ -8,6 +8,7 @@ import { AnalyticsTracker, initGA } from './components/AnalyticsTracker';
 import { AdminDashboard } from './components/AdminDashboard';
 import LandingPageNoBrain from './components/LandingPageNoBrain';
 import SetNewPasswordScreen from './components/SetNewPasswordScreen';
+import ConfirmAccess from './components/ConfirmAccess';
 import LegalPage from './components/LegalPage';
 import { trackEvent } from './services/analyticsService';
 import { useAdminAccess } from './hooks/useAdminAccess';
@@ -78,7 +79,7 @@ function captureAdAttribution() {
 
 export default function SimulatorApp() {
   // --- AUTH & USER STATE ---
-  const { user, loading, passwordRecoveryMode, signOut, updatePassword } = useAuth();
+  const { user, loading, passwordRecoveryMode, signOut, updatePassword, confirmToken } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdminAccess();
 
   useEffect(() => {
@@ -108,6 +109,7 @@ export default function SimulatorApp() {
       <Routes>
         <Route path="/admin" element={isAdmin ? <AdminDashboard /> : <Navigate to="/" />} />
         <Route path="/legal" element={<LegalPage />} />
+        <Route path="/confirmar-acesso" element={<ConfirmAccess confirmToken={confirmToken} />} />
         <Route
           path="/login"
           element={!user ? <AuthPage /> : <Navigate to="/" />}

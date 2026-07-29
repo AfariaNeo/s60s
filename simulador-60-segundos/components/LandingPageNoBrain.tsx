@@ -165,6 +165,14 @@ export default function LandingPageNoBrain() {
                         </button>
 
                         <div className="hidden md:flex items-center gap-4">
+                            {/* Já é cliente (comprou pela Hotmart)? Vai direto pra tela de login,
+                                sem precisar depender do link automático do e-mail funcionar. */}
+                            <button
+                                onClick={() => navigate('/login')}
+                                className="text-sm text-white/70 hover:text-white transition-colors underline-offset-2 hover:underline"
+                            >
+                                Já sou cliente
+                            </button>
                             <button
                                 onClick={handleAction}
                                 className="bg-[#B7F34A] text-[#0F2747] px-6 py-2.5 rounded-xl font-extrabold text-sm hover:brightness-95 transition-all shadow-lg shadow-black/20 active:scale-95"
@@ -180,9 +188,12 @@ export default function LandingPageNoBrain() {
                 </div>
 
                 {isMenuOpen && (
-                    <div className="md:hidden bg-[#0F2747] border-t border-white/10 p-4">
+                    <div className="md:hidden bg-[#0F2747] border-t border-white/10 p-4 space-y-3">
                         <button onClick={handleAction} className="block w-full text-center bg-[#B7F34A] text-[#0F2747] py-3 rounded-xl font-extrabold">
                             QUERO ACESSO AGORA
+                        </button>
+                        <button onClick={() => navigate('/login')} className="block w-full text-center text-white/70 text-sm py-1">
+                            Já sou cliente — Entrar
                         </button>
                     </div>
                 )}
