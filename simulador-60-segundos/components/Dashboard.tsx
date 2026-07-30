@@ -8,7 +8,6 @@ import FinancingTab from './FinancingTab';
 import CommissionTab from './CommissionTab';
 import PricingTab from './PricingTab';
 import CostsTab from './CostsTab';
-import LegacyTrialModal from './LegacyTrialModal';
 import { useSimulation } from '../hooks/useSimulation';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useAnalytics } from '../hooks/useAnalytics';
@@ -24,7 +23,7 @@ interface DashboardProps {
 export default function Dashboard({ user, signOut }: DashboardProps) {
     const { track } = useAnalytics();
     // --- AUTH & PROFILE ---
-    const { profile, loading: loadingProfile, incrementUsage, updateTrialStartedAt, updateProfile } = useUserProfile(user);
+    const { profile, loading: loadingProfile, incrementUsage, updateProfile } = useUserProfile(user);
 
     // Fallback while loading or if error
     const userPlan: UserPlan = profile?.plan || 'free';
@@ -35,43 +34,13 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
     // Update profile object with resolved name for Modal usage
     const displayProfile = profile ? { ...profile, name: userName } : null;
 
-    // --- TRIAL LOGIC (Modelo Híbrido) ---
-    // Usuários cadastrados ANTES desta data são "legados"
-    const ACTIVATION_DATE = new Date('2026-05-19T00:00:00.000Z');
-    const now = new Date();
-    const profileCreatedAt = profile?.createdAt ? new Date(profile.createdAt) : null;
-    const isLegacyUser = profileCreatedAt ? profileCreatedAt <= ACTIVATION_DATE : false;
-    const TRIAL_DAYS = 7;
-
-    let daysRemaining = 0;
-    let isOnTrial = false;
-    let showLegacyTrialModal = false;
-
-    if (userPlan === 'plus') {
-        isOnTrial = false;
-    } else if (!isLegacyUser && profileCreatedAt) {
-        // Novo usuário: trial começa na criação
-        const daysSince = Math.floor((now.getTime() - profileCreatedAt.getTime()) / (1000 * 60 * 60 * 24));
-        daysRemaining = Math.max(0, TRIAL_DAYS - daysSince);
-        isOnTrial = daysRemaining > 0;
-    } else if (isLegacyUser) {
-        if (!profile?.trialStartedAt) {
-            // Ainda não viu o modal — mantém acesso e exibe modal
-            showLegacyTrialModal = true;
-            isOnTrial = true;
-            daysRemaining = TRIAL_DAYS;
-        } else {
-            const daysSince = Math.floor((now.getTime() - new Date(profile.trialStartedAt).getTime()) / (1000 * 60 * 60 * 24));
-            daysRemaining = Math.max(0, TRIAL_DAYS - daysSince);
-            isOnTrial = daysRemaining > 0;
-        }
-    }
-
-    const hasFullAccess = userPlan === 'plus' || isOnTrial;
-
-    // Data de fim do trial para o modal legado
-    const legacyTrialEndDate = new Date();
-    legacyTrialEndDate.setDate(legacyTrialEndDate.getDate() + TRIAL_DAYS);
+    // --- ACESSO ---
+    // Modelo atual: acesso completo exige assinatura ativa (plan === 'plus').
+    // Não existe mais trial gratuito — quem compra já entra pago, e os 7 dias que
+    // existem são o prazo de arrependimento/garantia da Hotmart (reembolso, não uso
+    // liberado antes de pagar). O hotmart-webhook já rebaixa pra 'free' automaticamente
+    // em caso de reembolso/chargeback/cancelamento.
+    const hasFullAccess = userPlan === 'plus';
 
     // --- UI STATE ---
     const [activeTab, setActiveTab] = useState<Tab>('financing');
@@ -99,7 +68,7 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
 
     const openPricingModal = (source: 'limit_reached' | 'user_click' | 'feature_blocked' | 'trial_expired') => {
         setIsPricingModalOpen(true);
-        track('modal_open', 'pricing_modal_opened', { source, userPlan, daysRemaining }, 'PricingModal');
+        track('modal_open', 'pricing_modal_opened', { source, userPlan }, 'PricingModal');
     };
 
     const handleTabChange = (tab: Tab) => {
@@ -233,15 +202,6 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                 onProfileUpdate={updateProfile}
             />
 
-            <LegacyTrialModal
-                isOpen={showLegacyTrialModal}
-                trialEndDate={legacyTrialEndDate}
-                onConfirm={async () => {
-                    await updateTrialStartedAt();
-                    track('button_click', 'legacy_trial_confirmed', {}, 'LegacyTrialModal');
-                }}
-            />
-
             {/* Header */}
             <header className="bg-white border-b border-gray-200 sticky top-0 z-30 print:hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -259,20 +219,10 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                         <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1 ${
                             userPlan === 'plus'
                                 ? 'bg-[#E1E8F0] text-[#0F2747]'
-                                : isOnTrial && daysRemaining <= 5
-                                    ? 'bg-amber-100 text-amber-800'
-                                    : isOnTrial
-                                        ? 'bg-gray-100 text-gray-600'
-                                        : 'bg-red-100 text-red-700'
+                                : 'bg-gray-100 text-gray-600'
                             }`}>
                             {userPlan === 'plus' && <Crown className="w-3 h-3" />}
-                            {userPlan === 'plus'
-                                ? 'PLUS'
-                                : isOnTrial && daysRemaining > 5
-                                    ? `Trial — ${daysRemaining} dias`
-                                    : isOnTrial
-                                        ? `⚠ ${daysRemaining} dias restantes`
-                                        : 'Trial Expirado'}
+                            {userPlan === 'plus' ? 'PLUS' : 'Gratuito'}
                         </div>
 
                         {userPlan !== 'plus' && (

@@ -20,33 +20,6 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, profile, o
 
   if (!isOpen || !profile) return null;
 
-  // --- TRIAL LOGIC (Modelo Híbrido) ---
-  const ACTIVATION_DATE = new Date('2026-05-19T00:00:00.000Z');
-  const now = new Date();
-  const profileCreatedAt = profile?.createdAt ? new Date(profile.createdAt) : null;
-  const isLegacyUser = profileCreatedAt ? profileCreatedAt <= ACTIVATION_DATE : false;
-  const TRIAL_DAYS = 7;
-
-  let daysRemaining = 0;
-  let isOnTrial = false;
-
-  if (profile.plan === 'plus') {
-    isOnTrial = false;
-  } else if (!isLegacyUser && profileCreatedAt) {
-    const daysSince = Math.floor((now.getTime() - profileCreatedAt.getTime()) / (1000 * 60 * 60 * 24));
-    daysRemaining = Math.max(0, TRIAL_DAYS - daysSince);
-    isOnTrial = daysRemaining > 0;
-  } else if (isLegacyUser) {
-    if (!profile?.trialStartedAt) {
-      isOnTrial = true;
-      daysRemaining = TRIAL_DAYS;
-    } else {
-      const daysSince = Math.floor((now.getTime() - new Date(profile.trialStartedAt).getTime()) / (1000 * 60 * 60 * 24));
-      daysRemaining = Math.max(0, TRIAL_DAYS - daysSince);
-      isOnTrial = daysRemaining > 0;
-    }
-  }
-
   const handlePasswordReset = async () => {
     if (import.meta.env.DEV) {
       console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
@@ -176,24 +149,16 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, profile, o
           )}
 
           {profile.plan === 'free' && (
-            <div className={`flex items-center gap-3 p-4 rounded-xl border ${
-              isOnTrial ? 'bg-blue-50 border-blue-100' : 'bg-red-50 border-red-100'
-            }`}>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                isOnTrial ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'
-              }`}>
+            <div className="flex items-center gap-3 p-4 rounded-xl border bg-red-50 border-red-100">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-red-100 text-red-600">
                 <Calendar className="w-5 h-5" />
               </div>
               <div>
-                <p className={`text-xs font-semibold ${isOnTrial ? 'text-blue-600' : 'text-red-600'}`}>
-                  Período de Teste (Trial)
+                <p className="text-xs font-semibold text-red-600">
+                  Acesso Limitado
                 </p>
-                <p className={`text-sm ${isOnTrial ? 'text-blue-900' : 'text-red-900'}`}>
-                  {isOnTrial ? (
-                    <>Dias restantes: <span className="font-bold">{daysRemaining}</span></>
-                  ) : (
-                    <span className="font-bold">Expirado (Acesso Limitado)</span>
-                  )}
+                <p className="text-sm text-red-900">
+                  Assine o plano PRO para liberar o simulador completo.
                 </p>
               </div>
             </div>
