@@ -556,8 +556,9 @@ export default function LandingPageNoBrain() {
                         <div className="absolute top-0 right-0 bg-[#B7F34A] text-[#0F2747] text-xs font-black px-3 py-1 rounded-bl-lg uppercase">Mais popular</div>
                         <h3 className="text-xl font-bold text-white">Plano Plus</h3>
                         <div className="my-4">
-                            <span className="text-5xl font-black text-white">R$ 99,00</span>
+                            <span className="text-5xl font-black text-white">R$ 97,00</span>
                             <span className="text-[#B8C4D1]">/ano</span>
+                            <div className="text-sm text-[#B8C4D1] mt-1">ou 3x de R$ 32,33</div>
                         </div>
                         <ul className="space-y-3 mb-8 text-left">
                             <PricingCheck text="Simulações ILIMITADAS" />
