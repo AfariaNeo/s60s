@@ -350,7 +350,7 @@ export default function LandingPageNoBrain() {
                                 key={activeTool.key}
                                 src={activeTool.image}
                                 alt={activeTool.alt}
-                                className="w-full max-w-[360px] h-auto drop-shadow-2xl"
+                                className="w-full max-w-[440px] h-auto drop-shadow-2xl"
                             />
                             <span className="mt-4 text-xs text-[#B8C4D1] uppercase tracking-wide">{activeTool.resultLabel}</span>
                         </div>
@@ -430,7 +430,7 @@ export default function LandingPageNoBrain() {
                             <img
                                 src="/images/tela_whatsapp.png"
                                 alt="Print real: resumo da simulação de financiamento enviado pelo WhatsApp no Simulador 60 Segundos"
-                                className="w-full max-w-[300px] sm:max-w-[360px] h-auto drop-shadow-2xl"
+                                className="w-full max-w-[300px] sm:max-w-[360px] lg:max-w-[440px] h-auto drop-shadow-2xl"
                             />
                         </div>
                         <div className="order-2 text-center lg:text-left">
