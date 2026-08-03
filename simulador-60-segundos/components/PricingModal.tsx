@@ -80,8 +80,12 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
           <div className="p-6 border-2 border-[#B7F34A] rounded-xl bg-white relative">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#B7F34A] text-[#0F2747] px-3 py-1 rounded-full text-xs font-bold">RECOMENDADO</div>
             <h3 className="font-bold text-xl">Profissional</h3>
-            <p className="text-2xl font-bold mt-2">R$ 97,00<span className="text-sm font-normal text-gray-500">/ano</span></p>
-            <p className="text-xs text-gray-500 mt-0.5">ou 3x de R$ 32,33</p>
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-sm text-gray-400 line-through">R$ 97,00</span>
+              <span className="text-[10px] font-black text-[#0F2747] bg-[#B7F34A] px-2 py-0.5 rounded-full uppercase tracking-wide">-31%</span>
+            </div>
+            <p className="text-2xl font-bold mt-1">R$ 67,00<span className="text-sm font-normal text-gray-500">/ano</span></p>
+            <p className="text-xs text-gray-500 mt-0.5">ou 3x de R$ 22,33</p>
             <p className="text-xs text-center text-[#0F2747] font-medium mt-1 mb-4">Renovação Automática</p>
             <ul className="mt-4 space-y-2 text-sm text-gray-600">
               <li className="flex gap-2"><Check className="w-4 h-4 text-[#0F2747]" /> Uso Ilimitado</li>

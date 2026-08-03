@@ -161,7 +161,7 @@ export default function LandingPageNoBrain() {
                                 alt="Logo Simulador 60 Segundos"
                                 className="h-9 w-auto object-contain"
                             />
-                            <span className="text-lg font-bold tracking-tight text-white hidden sm:inline">Simulador 60 Segundos</span>
+                            <span className="text-sm sm:text-lg font-bold tracking-tight text-white whitespace-nowrap">Simulador 60 Segundos</span>
                         </button>
 
                         <div className="hidden md:flex items-center gap-4">
@@ -193,7 +193,7 @@ export default function LandingPageNoBrain() {
                             QUERO ACESSO AGORA
                         </button>
                         <button onClick={() => navigate('/login')} className="block w-full text-center text-white/70 text-sm py-1">
-                            Já sou cliente — Entrar
+                            Já sou cliente
                         </button>
                     </div>
                 )}
@@ -224,8 +224,8 @@ export default function LandingPageNoBrain() {
                             </h1>
 
                             <p className="max-w-xl mx-auto md:mx-0 text-lg text-[#D9E2EC] mb-8 leading-relaxed">
-                                Calcule entrada, parcelas SAC e PRICE, renda mínima, custos da compra, valor do anúncio e sua comissão —
-                                tudo no Simulador 60 Segundos, uma única ferramenta na palma da mão.
+                                Calcule entrada, parcelas SAC e PRICE, renda mínima, custos da compra, valor do anúncio e sua comissão.
+                                Tudo no Simulador 60 Segundos, uma única ferramenta na palma da mão.
                             </p>
 
                             <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4">
@@ -422,6 +422,49 @@ export default function LandingPageNoBrain() {
                 </div>
             </section>
 
+            {/* --- ENVIO PELO WHATSAPP --- */}
+            <section className="py-20 bg-[#F3F5F7]">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="grid lg:grid-cols-2 gap-12 items-center">
+                        <div className="order-1 flex justify-center">
+                            <img
+                                src="/images/tela_whatsapp.png"
+                                alt="Print real: resumo da simulação de financiamento enviado pelo WhatsApp no Simulador 60 Segundos"
+                                className="w-full max-w-[300px] sm:max-w-[360px] h-auto drop-shadow-2xl"
+                            />
+                        </div>
+                        <div className="order-2 text-center lg:text-left">
+                            <h2 className="text-3xl md:text-4xl font-black text-[#0F2747] mb-6">Envie um resumo profissional pelo WhatsApp em 1 toque</h2>
+                            <p className="text-[#1D2633]/70 mb-6">
+                                Depois de calcular o cenário, você não precisa digitar nada de novo pro cliente. O Simulador monta um
+                                resumo já formatado (com os dados do imóvel, entrada, parcelas SAC e PRICE e a ressalva sobre o CET)
+                                e você envia direto pelo WhatsApp, com o cliente ainda na sua frente.
+                            </p>
+                            <ul className="space-y-3 mb-8 text-left max-w-sm mx-auto lg:mx-0">
+                                <li className="flex items-start gap-3">
+                                    <CheckCircle2 className="w-5 h-5 text-[#B7F34A] flex-shrink-0 mt-0.5" />
+                                    <span className="text-[#1D2633]">Resumo pronto, sem digitar de novo</span>
+                                </li>
+                                <li className="flex items-start gap-3">
+                                    <CheckCircle2 className="w-5 h-5 text-[#B7F34A] flex-shrink-0 mt-0.5" />
+                                    <span className="text-[#1D2633]">Cenários SAC e PRICE lado a lado</span>
+                                </li>
+                                <li className="flex items-start gap-3">
+                                    <CheckCircle2 className="w-5 h-5 text-[#B7F34A] flex-shrink-0 mt-0.5" />
+                                    <span className="text-[#1D2633]">Passa mais profissionalismo do que print de tela</span>
+                                </li>
+                            </ul>
+                            <button
+                                onClick={handleAction}
+                                className="px-8 py-4 bg-[#B7F34A] text-[#0F2747] rounded-xl font-black hover:brightness-95 transition-all shadow-lg inline-flex items-center gap-2"
+                            >
+                                QUERO ENVIAR ASSIM TAMBÉM <ArrowRight className="w-5 h-5" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* --- TRANSFORMAÇÃO DESEJADA --- */}
             <section className="py-20 bg-[#0F2747] text-white">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -550,15 +593,21 @@ export default function LandingPageNoBrain() {
                         Acesso liberado na hora
                     </div>
                     <h2 className="text-3xl md:text-4xl font-black text-[#0F2747] mb-4">Tenha as 4 ferramentas liberadas agora mesmo</h2>
-                    <p className="text-[#1D2633]/70 mb-12 max-w-xl mx-auto">Um pagamento por ano. Sem limite de uso, sem burocracia — acesso liberado assim que a compra é confirmada.</p>
+                    <p className="text-[#1D2633]/70 mb-12 max-w-xl mx-auto">Um pagamento por ano. Sem limite de uso, sem burocracia. Acesso liberado assim que a compra é confirmada.</p>
 
                     <div className="bg-[#0F2747] rounded-2xl shadow-xl p-8 sm:p-10 max-w-md mx-auto relative overflow-hidden">
                         <div className="absolute top-0 right-0 bg-[#B7F34A] text-[#0F2747] text-xs font-black px-3 py-1 rounded-bl-lg uppercase">Mais popular</div>
                         <h3 className="text-xl font-bold text-white">Plano Plus</h3>
                         <div className="my-4">
-                            <span className="text-5xl font-black text-white">R$ 97,00</span>
-                            <span className="text-[#B8C4D1]">/ano</span>
-                            <div className="text-sm text-[#B8C4D1] mt-1">ou 3x de R$ 32,33</div>
+                            <div className="flex items-center justify-center gap-2">
+                                <span className="text-base text-[#B8C4D1]/60 line-through">R$ 97,00</span>
+                                <span className="text-[11px] font-black text-[#0F2747] bg-[#B7F34A] px-2 py-0.5 rounded-full uppercase tracking-wide">-31%</span>
+                            </div>
+                            <div className="mt-1">
+                                <span className="text-5xl font-black text-white">R$ 67,00</span>
+                                <span className="text-[#B8C4D1]">/ano</span>
+                            </div>
+                            <div className="text-sm text-[#B8C4D1] mt-1">ou 3x de R$ 22,33</div>
                         </div>
                         <ul className="space-y-3 mb-8 text-left">
                             <PricingCheck text="Simulações ILIMITADAS" />
@@ -581,7 +630,7 @@ export default function LandingPageNoBrain() {
                     <p className="text-lg text-[#1D2633]/70">
                         Uma venda perdida pode representar milhares de reais em comissão. O Simulador 60 Segundos existe pra você não perder
                         o ritmo do atendimento por causa de uma conta que poderia ser feita em segundos. Você não está comprando uma
-                        calculadora — está colocando 4 ferramentas essenciais na palma da mão.
+                        calculadora: está colocando 4 ferramentas essenciais na palma da mão.
                     </p>
                 </div>
             </section>
