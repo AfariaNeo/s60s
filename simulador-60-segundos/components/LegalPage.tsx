@@ -42,7 +42,7 @@ export default function LegalPage() {
                             <h3 className="font-semibold text-gray-900 mt-4">1.1. Coleta de Dados</h3>
                             <p>Coletamos apenas os dados estritamente necessários para o funcionamento do serviço:</p>
                             <ul className="list-disc pl-5 mt-2 space-y-1">
-                                <li><strong>E-mail:</strong> Para autenticação, recuperação de senha e comunicação sobre sua conta.</li>
+                                <li><strong>E-mail:</strong> Para autenticação, recuperação de senha, comunicação sobre sua conta e envio de comunicações de marketing (novidades, promoções e ofertas), conforme detalhado no item 1.4 abaixo.</li>
                                 <li><strong>Dados de Uso:</strong> Quantidade de simulações realizadas para controle do plano contratado (Free ou Plus).</li>
                             </ul>
 
@@ -56,6 +56,14 @@ export default function LegalPage() {
 
                             <h3 className="font-semibold text-gray-900 mt-4">1.3. Seus Direitos</h3>
                             <p>Você pode, a qualquer momento, solicitar a exclusão da sua conta e de todos os seus dados enviando um e-mail para o suporte.</p>
+
+                            <h3 className="font-semibold text-gray-900 mt-4">1.4. Comunicações de Marketing</h3>
+                            <p>
+                                Ao se cadastrar, você concorda em receber comunicações de marketing do Simulador 60 Segundos por e-mail,
+                                como novidades, promoções, ofertas e lembretes sobre sua conta. Você pode cancelar o recebimento dessas
+                                comunicações a qualquer momento, clicando no link de descadastro presente em cada e-mail ou entrando em
+                                contato com nosso suporte.
+                            </p>
                         </section>
 
                         <hr className="border-gray-200" />
@@ -82,10 +90,14 @@ export default function LegalPage() {
 
                             <h3 className="font-semibold text-gray-900 mt-4">2.3. Planos e Pagamentos</h3>
                             <p>
-                                Novos usuários têm acesso completo e gratuito por <strong>7 dias</strong> a partir do cadastro, sem necessidade de cartão de crédito.
-                                Após esse período, o cálculo de <strong>Comissão permanece gratuito</strong> para sempre.
-                                As demais ferramentas (Financiamento, Precificação e Custos de Compra) requerem o Plano Plus mediante assinatura anual.
-                                O cancelamento pode ser feito a qualquer momento, interrompendo a renovação automática para o período seguinte.
+                                O cálculo de <strong>Comissão é gratuito para sempre</strong>, para todos os usuários.
+                                As demais ferramentas (Financiamento, Precificação e Custos de Compra) ficam disponíveis mediante
+                                assinatura do Plano Plus, cobrada anualmente, com acesso liberado imediatamente após a confirmação
+                                do pagamento — não há período de teste gratuito. Como em toda compra realizada no Brasil, você conta
+                                com o direito de arrependimento previsto no Código de Defesa do Consumidor: em até <strong>7 dias
+                                corridos</strong> a partir da confirmação da compra, é possível solicitar o cancelamento e o reembolso
+                                integral, sem necessidade de justificativa. Após esse prazo, o cancelamento pode ser feito a qualquer
+                                momento, interrompendo a renovação automática a partir do período seguinte.
                             </p>
                         </section>
 
