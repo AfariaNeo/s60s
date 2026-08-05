@@ -9,6 +9,7 @@ const DEFAULT_PARAMS: SimulationParams = {
     downPaymentPercent: 20,
     months: 360,
     annualInterestRate: 10.5,
+    bankCostPercent: 0,
 };
 
 export function useSimulation() {

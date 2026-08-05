@@ -66,7 +66,20 @@ export function loadGoogleAds() {
     gtag('config', GOOGLE_ADS_ID);
 
     window.gtag_report_conversion = function (url?: string) {
-        const callback = function () {
+        // Rede de segurança: o event_callback do Google Ads só dispara se a
+        // chamada de conversão terminar de verdade — e isso trava (às vezes
+        // pra sempre) quando um bloqueador de anúncios, o modo de privacidade
+        // do navegador ou uma conexão ruim impedem a requisição de completar.
+        // Sem essa rede de segurança, a pessoa clica em "comprar" e a página
+        // simplesmente não faz nada — foi exatamente o bug relatado ("nenhum
+        // link de compra da LP funciona"). Redireciona uma única vez, seja
+        // pelo callback do Google (caminho normal) ou, no máximo em 1s, pelo
+        // timeout — o que vier primeiro. O cliente nunca pode ficar preso
+        // aqui esperando uma métrica de anúncio.
+        let redirected = false;
+        const redirectOnce = () => {
+            if (redirected) return;
+            redirected = true;
             if (typeof url !== 'undefined') {
                 window.location.href = url;
             }
@@ -75,8 +88,9 @@ export function loadGoogleAds() {
             send_to: GOOGLE_ADS_CONVERSION_SEND_TO,
             value: 1.0,
             currency: 'BRL',
-            event_callback: callback,
+            event_callback: redirectOnce,
         });
+        setTimeout(redirectOnce, 1000);
         return false;
     };
 }

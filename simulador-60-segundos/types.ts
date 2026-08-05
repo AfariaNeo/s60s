@@ -4,6 +4,10 @@ export interface SimulationParams {
   downPaymentPercent: number;
   months: number;
   annualInterestRate: number;
+  // Custo bancário aproximado (a.a.) informado pelo próprio usuário — seguros, tarifas
+  // e demais encargos que, somados aos juros, compõem o "CET aproximado" exibido no
+  // relatório. Nunca é o CET oficial: é só uma referência que o usuário digita.
+  bankCostPercent?: number;
 }
 
 export interface AmortizationResult {

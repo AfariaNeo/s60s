@@ -241,9 +241,13 @@ export default function AuthPage() {
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-[#0F2747] p-3 rounded-xl w-14 h-14 mx-auto flex items-center justify-center">
-                    <Lock className="w-8 h-8 text-white" />
-                </div>
+                {/* Logo do Simulador acima do card — antes tinha só um quadrado navy com
+                    um cadeado genérico, sem identidade nenhuma da marca. */}
+                <img
+                    src="/images/logo_azul.png"
+                    alt="Simulador 60 Segundos"
+                    className="h-12 w-auto object-contain mx-auto"
+                />
             </div>
 
             <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
