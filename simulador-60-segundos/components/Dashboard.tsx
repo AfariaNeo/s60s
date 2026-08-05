@@ -200,6 +200,7 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                 onClose={() => setIsProfileModalOpen(false)}
                 profile={displayProfile}
                 onProfileUpdate={updateProfile}
+                onAccountDeleted={signOut}
             />
 
             {/* Header */}
