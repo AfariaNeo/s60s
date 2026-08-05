@@ -106,13 +106,38 @@ export function useAuth() {
         setPasswordRecoveryMode(true);
     };
 
-    // Define a senha nova depois que a pessoa entrou aqui via link de convite/recovery.
-    const updatePassword = async (newPassword: string) => {
-        const { error } = await supabase.auth.updateUser({ password: newPassword });
+    // Versão do Termos/Política vigente no momento do aceite. Se o texto jurídico mudar
+    // de forma relevante no futuro, sobe esse número — assim dá pra saber exatamente
+    // qual redação cada pessoa aceitou, mesmo que o texto atual da página já tenha mudado.
+    const TERMS_VERSION = '1.0';
+
+    // Define a senha nova depois que a pessoa entrou aqui via link de convite/recovery,
+    // e grava o aceite dos Termos (obrigatório) e o consentimento de marketing (opcional,
+    // separado) no perfil dela. É best-effort: se a gravação do aceite falhar, não
+    // travamos o acesso da pessoa por causa disso — só logamos o erro.
+    const updatePassword = async (newPassword: string, consent?: { termsAccepted: boolean; marketingConsent: boolean }) => {
+        const { data, error } = await supabase.auth.updateUser({ password: newPassword });
         if (error) throw error;
         setPasswordRecoveryMode(false);
         // Limpa o token da barra de endereço — não faz sentido deixar ele exposto/reutilizável.
         window.history.replaceState(null, '', window.location.pathname);
+
+        if (consent?.termsAccepted && data?.user?.id) {
+            const now = new Date().toISOString();
+            const { error: consentError } = await supabase
+                .from('profiles')
+                .update({
+                    terms_accepted_at: now,
+                    terms_version: TERMS_VERSION,
+                    marketing_consent: consent.marketingConsent,
+                    marketing_consent_at: consent.marketingConsent ? now : null,
+                })
+                .eq('id', data.user.id);
+
+            if (consentError) {
+                console.error('Falha ao registrar aceite dos Termos:', consentError);
+            }
+        }
     };
 
     return { user, loading, passwordRecoveryMode, signIn, signUp, signOut, resetPassword, updatePassword, confirmToken };

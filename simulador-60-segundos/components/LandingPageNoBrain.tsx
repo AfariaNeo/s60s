@@ -724,8 +724,12 @@ export default function LandingPageNoBrain() {
                     <div>
                         <h4 className="text-white font-bold mb-4">Legal</h4>
                         <ul className="space-y-2 text-sm">
-                            <li><button onClick={() => navigate('/legal')} className="hover:text-white">Termos de Uso</button></li>
-                            <li><button onClick={() => navigate('/legal')} className="hover:text-white">Privacidade</button></li>
+                            <li><button onClick={() => navigate('/termos-de-uso')} className="hover:text-white">Termos de Uso</button></li>
+                            <li><button onClick={() => navigate('/politica-de-privacidade')} className="hover:text-white">Privacidade</button></li>
+                            <li><button onClick={() => navigate('/politica-de-cookies')} className="hover:text-white">Cookies</button></li>
+                            <li><button onClick={() => window.dispatchEvent(new Event('open-cookie-preferences'))} className="hover:text-white">Preferências de cookies</button></li>
+                            <li><button onClick={() => navigate('/cancelamento-e-reembolso')} className="hover:text-white">Cancelamento e Reembolso</button></li>
+                            <li><button onClick={() => navigate('/aviso-legal-simulacoes')} className="hover:text-white">Aviso Legal das Simulações</button></li>
                             <li><button onClick={() => navigate('/login')} className="hover:text-white">Login</button></li>
                         </ul>
                     </div>

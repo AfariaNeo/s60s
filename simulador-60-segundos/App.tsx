@@ -9,7 +9,12 @@ import { AdminDashboard } from './components/AdminDashboard';
 import LandingPageNoBrain from './components/LandingPageNoBrain';
 import SetNewPasswordScreen from './components/SetNewPasswordScreen';
 import ConfirmAccess from './components/ConfirmAccess';
-import LegalPage from './components/LegalPage';
+import TermosDeUso from './components/TermosDeUso';
+import PoliticaDePrivacidade from './components/PoliticaDePrivacidade';
+import PoliticaDeCookies from './components/PoliticaDeCookies';
+import CancelamentoReembolso from './components/CancelamentoReembolso';
+import AvisoLegalSimulacoes from './components/AvisoLegalSimulacoes';
+import CookieConsentBanner from './components/CookieConsentBanner';
 import { trackEvent } from './services/analyticsService';
 import { useAdminAccess } from './hooks/useAdminAccess';
 
@@ -106,9 +111,20 @@ export default function SimulatorApp() {
     <BrowserRouter>
       <AnalyticsTracker />
       <RouteAnalytics userId={user?.id} />
+      {/* Global — aparece em qualquer rota (LP pública ou app já logado), já que o
+          Pixel da Meta e o Google Ads carregam a nível de aplicação, não só na LP. */}
+      <CookieConsentBanner />
       <Routes>
         <Route path="/admin" element={isAdmin ? <AdminDashboard /> : <Navigate to="/" />} />
-        <Route path="/legal" element={<LegalPage />} />
+        {/* As 5 páginas jurídicas públicas. /legal fica como redirecionamento de
+            compatibilidade, caso algum link antigo (e-mail já enviado, favorito, etc.)
+            ainda aponte pra ela. */}
+        <Route path="/legal" element={<Navigate to="/termos-de-uso" replace />} />
+        <Route path="/termos-de-uso" element={<TermosDeUso />} />
+        <Route path="/politica-de-privacidade" element={<PoliticaDePrivacidade />} />
+        <Route path="/politica-de-cookies" element={<PoliticaDeCookies />} />
+        <Route path="/cancelamento-e-reembolso" element={<CancelamentoReembolso />} />
+        <Route path="/aviso-legal-simulacoes" element={<AvisoLegalSimulacoes />} />
         <Route path="/confirmar-acesso" element={<ConfirmAccess confirmToken={confirmToken} />} />
         <Route
           path="/login"

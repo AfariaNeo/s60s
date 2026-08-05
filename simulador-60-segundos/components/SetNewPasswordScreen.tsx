@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import { Lock, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
+export interface ConsentData {
+    termsAccepted: boolean;
+    marketingConsent: boolean;
+}
+
 interface SetNewPasswordScreenProps {
-    onSubmit: (password: string) => Promise<void>;
+    onSubmit: (password: string, consent: ConsentData) => Promise<void>;
 }
 
 // Tela mostrada quando a pessoa chega no site por um link de convite (compra aprovada
@@ -17,6 +22,11 @@ export default function SetNewPasswordScreen({ onSubmit }: SetNewPasswordScreenP
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
+    // Aceite obrigatório dos Termos + ciência da Política de Privacidade — não vem
+    // marcado por padrão. Marketing é um consentimento separado e opcional, também
+    // desmarcado por padrão (ver pacote jurídico revisado com a advogada).
+    const [termsAccepted, setTermsAccepted] = useState(false);
+    const [marketingConsent, setMarketingConsent] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -30,10 +40,14 @@ export default function SetNewPasswordScreen({ onSubmit }: SetNewPasswordScreenP
             setError('As senhas não coincidem.');
             return;
         }
+        if (!termsAccepted) {
+            setError('É preciso aceitar os Termos de Uso para continuar.');
+            return;
+        }
 
         setLoading(true);
         try {
-            await onSubmit(password);
+            await onSubmit(password, { termsAccepted, marketingConsent });
             setSuccess(true);
         } catch (err: any) {
             setError(
@@ -127,9 +141,45 @@ export default function SetNewPasswordScreen({ onSubmit }: SetNewPasswordScreenP
                             </div>
                         </div>
 
+                        <div className="space-y-3 pt-1">
+                            <label className="flex items-start gap-2.5 text-sm text-gray-700 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={termsAccepted}
+                                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#0F2747] focus:ring-[#B7F34A] flex-shrink-0"
+                                />
+                                <span>
+                                    Li e aceito os{' '}
+                                    <a href="/termos-de-uso" target="_blank" rel="noopener noreferrer" className="text-[#0F2747] font-medium hover:underline">
+                                        Termos de Uso e Condições de Assinatura
+                                    </a>{' '}
+                                    e declaro ter lido a{' '}
+                                    <a href="/politica-de-privacidade" target="_blank" rel="noopener noreferrer" className="text-[#0F2747] font-medium hover:underline">
+                                        Política de Privacidade
+                                    </a>
+                                    . Estou ciente de que o plano é anual, possui renovação automática pelo preço vigente e
+                                    pode ser cancelado antes da próxima cobrança.
+                                </span>
+                            </label>
+
+                            <label className="flex items-start gap-2.5 text-sm text-gray-600 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={marketingConsent}
+                                    onChange={(e) => setMarketingConsent(e.target.checked)}
+                                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#0F2747] focus:ring-[#B7F34A] flex-shrink-0"
+                                />
+                                <span>
+                                    Quero receber novidades, conteúdos e ofertas do Simulador 60 Segundos por e-mail. Posso
+                                    cancelar essa autorização a qualquer momento.
+                                </span>
+                            </label>
+                        </div>
+
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={loading || !termsAccepted}
                             className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#0F2747] hover:bg-[#0B1D38] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#B7F34A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Criar senha e entrar'}
