@@ -1,7 +1,7 @@
 import { AmortizationResult, SimulationParams, CommissionParams, CommissionResult, PricingParams, PricingResult, PurchaseCostParams, PurchaseCostResult } from '../types';
 
 export const calculateSimulation = (params: SimulationParams): { sac: AmortizationResult, price: AmortizationResult } => {
-  const { propertyValue, downPaymentPercent, months, annualInterestRate } = params;
+  const { propertyValue, downPaymentPercent, months, annualInterestRate, bankCostPercent } = params;
 
   // Guard clause for zero or invalid property value
   if (!propertyValue || propertyValue <= 0) {
@@ -19,8 +19,15 @@ export const calculateSimulation = (params: SimulationParams): { sac: Amortizati
   const downPayment = propertyValue * (downPaymentPercent / 100);
   const loanAmount = propertyValue - downPayment;
 
-  // Calculate monthly interest rate from annual nominal rate
-  const monthlyInterestRate = Math.pow(1 + (annualInterestRate / 100), 1 / 12) - 1;
+  // O custo bancário aproximado (seguros, tarifas etc.) entra somado à taxa de juros
+  // pra calcular a parcela — decisão confirmada com o usuário em 11/08/2026, já que
+  // ainda não fazemos um cálculo de amortização separado pra esses encargos. É uma
+  // simplificação (trata o custo bancário como se compusesse mês a mês, igual juro),
+  // mas é a mesma aproximação que o "CET aproximado" já assume no relatório.
+  const effectiveAnnualRate = annualInterestRate + (bankCostPercent || 0);
+
+  // Calculate monthly interest rate from annual nominal rate (já incluindo o custo bancário)
+  const monthlyInterestRate = Math.pow(1 + (effectiveAnnualRate / 100), 1 / 12) - 1;
 
   return {
     sac: calculateSAC(loanAmount, monthlyInterestRate, months),

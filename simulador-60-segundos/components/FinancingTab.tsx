@@ -152,13 +152,13 @@ export default function FinancingTab({
             `1ª Parcela: ${formatCurrency(sac.initialInstallment)}\n` +
             `Última: ${formatCurrency(sac.finalInstallment)}\n` +
             `Renda Mínima: ${formatCurrency(sac.requiredIncome)}\n` +
-            `Total Pago: ${formatCurrency(sac.totalAmountPaid)}\n\n` +
+            `Total a Pagar: ${formatCurrency(sac.totalAmountPaid)}\n\n` +
             `*Opção PRICE (Parcelas Fixas)*\n` +
             `Parcela: ${formatCurrency(price.initialInstallment)}\n` +
             `Renda Mínima: ${formatCurrency(price.requiredIncome)}\n` +
-            `Total Pago: ${formatCurrency(price.totalAmountPaid)}\n\n` +
+            `Total a Pagar: ${formatCurrency(price.totalAmountPaid)}\n\n` +
             `_Simulação aproximada. O CET informado aqui é só uma referência somada por` +
-            ` você — o Custo Efetivo Total oficial varia por banco e só ele define o valor real._`;
+            ` você, o Custo Efetivo Total oficial varia por banco e só ele define o valor real._`;
     };
 
     return (
@@ -305,7 +305,7 @@ export default function FinancingTab({
                                 <p className="text-[11px] text-gray-500 leading-snug">
                                     Some aqui seguros, tarifas e demais encargos cobrados pelo banco (fora os juros).
                                     Você pode consultar esse percentual aproximado no simulador do próprio banco, no
-                                    contrato de financiamento ou com o correspondente bancário. Campo opcional — some
+                                    contrato de financiamento ou com o correspondente bancário. Campo opcional, some
                                     aos juros só pra formar o CET aproximado do relatório.
                                 </p>
                             </div>
@@ -365,7 +365,7 @@ export default function FinancingTab({
                                     <p className="text-xs text-gray-700">
                                         <strong>CET aproximado: {cetAproximado.toFixed(2)}% a.a.</strong> (juros de{' '}
                                         {params.annualInterestRate}% + custo bancário aproximado de {params.bankCostPercent}%,
-                                        informado por você). Esta é apenas uma soma de referência — nunca o CET oficial,
+                                        informado por você). Esta é apenas uma soma de referência, nunca o CET oficial,
                                         que só o banco pode calcular e informar.
                                     </p>
                                 </div>
@@ -387,7 +387,7 @@ export default function FinancingTab({
 
                                     <div className="pt-3 mt-3 border-t border-gray-100">
                                         <ResultRow label="Total Juros" value={formatCurrency(results.sac.totalInterest)} small />
-                                        <ResultRow label="Total Pago" value={formatCurrency(results.sac.totalAmountPaid)} bold />
+                                        <ResultRow label="Total a Pagar" value={formatCurrency(results.sac.totalAmountPaid)} bold />
                                     </div>
                                 </div>
                             </div>
@@ -406,7 +406,7 @@ export default function FinancingTab({
 
                                     <div className="pt-3 mt-3 border-t border-gray-100">
                                         <ResultRow label="Total Juros" value={formatCurrency(results.price.totalInterest)} small />
-                                        <ResultRow label="Total Pago" value={formatCurrency(results.price.totalAmountPaid)} bold />
+                                        <ResultRow label="Total a Pagar" value={formatCurrency(results.price.totalAmountPaid)} bold />
                                     </div>
                                 </div>
                             </div>
@@ -422,7 +422,7 @@ export default function FinancingTab({
                             {!!params.bankCostPercent && (
                                 <p>
                                     CET aproximado: {cetAproximado.toFixed(2)}% a.a. (juros + custo bancário
-                                    aproximado informado — nunca o CET oficial do banco)
+                                    aproximado informado, nunca o CET oficial do banco)
                                 </p>
                             )}
                         </div>
