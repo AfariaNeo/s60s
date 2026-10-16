@@ -4,6 +4,12 @@ import { supabase } from '../lib/supabaseClient';
 import { User } from '@supabase/supabase-js';
 import { UserProfile, UserPlan } from '../types';
 
+// Modelo de acesso: 5 usos grátis no total (sem reset mensal), somando Financiamento +
+// Precificação + Custos de Compra num único contador. Comissão nunca entra aqui, é
+// ilimitada pra sempre (checado direto no Dashboard, não passa por incrementUsage).
+// Depois de gastar os 5, só liberando com o plano Plus.
+export const FREE_USAGE_LIMIT = 5;
+
 export function useUserProfile(user: User | null) {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
@@ -94,35 +100,10 @@ export function useUserProfile(user: User | null) {
                         email: rawData.email || ''
                     } as UserProfile;
 
-                    if (shouldResetUsage(currentProfile.lastResetDate)) {
-                        // ... (keep existing reset logic)
-                        const { data: resetData, error: resetError } = await supabase
-                            .from('profiles')
-                            .update({
-                                usage_count: 0,
-                                last_reset_date: new Date().toISOString()
-                            })
-                            .eq('id', user.id)
-                            .select()
-                            .single();
-
-                        if (resetError) throw resetError;
-
-                        // Map reset data too
-                        setProfile({
-                            ...resetData,
-                            plan: activePlan, // Maintain the calculated plan expiration
-                            usageCount: (resetData as any).usage_count ?? 0,
-                            lastResetDate: (resetData as any).last_reset_date,
-                            subscriptionEndDate: (resetData as any).subscription_end_date,
-                            trialStartedAt: (resetData as any).trial_started_at ?? undefined,
-                            createdAt: (resetData as any).created_at ?? undefined,
-                            name: resolvedName // Keep resolved name
-                        } as UserProfile);
-
-                    } else {
-                        setProfile(currentProfile);
-                    }
+                    // Sem reset mensal: usage_count é um contador vitalício (ver FREE_USAGE_LIMIT
+                    // no topo do arquivo). O antigo reset mensal foi removido porque, nesse modelo,
+                    // reset todo mês daria 5 usos grátis de novo pra sempre, o que anula o limite.
+                    setProfile(currentProfile);
                 }
             } catch (err) {
                 console.error('Error fetching/creating profile:', err);
@@ -212,6 +193,12 @@ export function useUserProfile(user: User | null) {
 
             const currentUsage = freshProfile.usage_count;
 
+            // 2. Checagem de verdade do limite (fonte da verdade é o banco, não só o estado
+            // local do React) — quem já é Plus nunca cai aqui, mas checa de novo por segurança.
+            if (freshProfile.plan !== 'plus' && currentUsage >= FREE_USAGE_LIMIT) {
+                return { success: false, limitReached: true };
+            }
+
             // 3. Increment
             const newCount = currentUsage + 1;
             const { error: updateError } = await supabase
@@ -235,15 +222,6 @@ export function useUserProfile(user: User | null) {
             console.error('Unexpected error in incrementUsage:', err);
             return { success: false, limitReached: false };
         }
-    };
-
-    // Helper to check if we entered a new month
-    const shouldResetUsage = (lastResetDateStr?: string) => {
-        if (!lastResetDateStr) return true;
-        const lastReset = new Date(lastResetDateStr);
-        const now = new Date();
-
-        return lastReset.getMonth() !== now.getMonth() || lastReset.getFullYear() !== now.getFullYear();
     };
 
     const updateTrialStartedAt = async (): Promise<boolean> => {

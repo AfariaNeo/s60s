@@ -1,21 +1,30 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { Lock, Mail, Loader2, LogIn, AlertCircle, CheckCircle2, ArrowLeft, KeyRound } from 'lucide-react';
+import { Lock, Mail, Loader2, LogIn, AlertCircle, CheckCircle2, ArrowLeft, KeyRound, User as UserIcon, UserPlus } from 'lucide-react';
 
-// Login-only: o cadastro deixou de existir aqui porque o acesso agora nasce
-// na compra pela Hotmart (o webhook cria a conta e envia um convite por e-mail
-// — veja ConfirmAccess.tsx). Quem chega nesta tela já é cliente; quem não é,
-// tem um link de volta pra Landing Page.
-type AuthView = 'login' | 'forgot';
+// Cadastro voltou a existir aqui (modelo gratuito com uso restrito, ver Dashboard.tsx /
+// useUserProfile.ts): quem cria conta pelo formulário abaixo nasce no plano 'free', com
+// direito aos usos grátis + Comissão ilimitada. Quem já comprou o Plus continua chegando
+// pelo link de convite da Hotmart (ConfirmAccess.tsx), sem passar por este formulário.
+// "?cadastro=1" na URL (usado pelos CTAs da Landing Page) já abre direto na aba de cadastro.
+type AuthView = 'login' | 'signup' | 'signup_sent' | 'forgot';
 
 export default function AuthPage() {
-    const { signIn, resetPassword } = useAuth();
-    const [view, setView] = useState<AuthView>('login');
+    const { signIn, signUp, resetPassword } = useAuth();
+    const [searchParams] = useSearchParams();
+    const [view, setView] = useState<AuthView>(searchParams.get('cadastro') ? 'signup' : 'login');
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const [name, setName] = useState('');
+    const [signupEmail, setSignupEmail] = useState('');
+    const [signupPassword, setSignupPassword] = useState('');
+    const [signupLoading, setSignupLoading] = useState(false);
+    const [signupError, setSignupError] = useState<string | null>(null);
 
     const [resetLoading, setResetLoading] = useState(false);
     const [resetSent, setResetSent] = useState(false);
@@ -31,6 +40,27 @@ export default function AuthPage() {
             setError(err.message || 'Ocorreu um erro ao entrar. Verifique seu e-mail e senha.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleSignup = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSignupLoading(true);
+        setSignupError(null);
+
+        if (signupPassword.length < 6) {
+            setSignupError('A senha precisa ter pelo menos 6 caracteres.');
+            setSignupLoading(false);
+            return;
+        }
+
+        try {
+            await signUp(signupEmail, signupPassword, name.trim() || undefined);
+            setView('signup_sent');
+        } catch (err: any) {
+            setSignupError(err.message || 'Não foi possível criar sua conta. Tente novamente.');
+        } finally {
+            setSignupLoading(false);
         }
     };
 
@@ -64,6 +94,11 @@ export default function AuthPage() {
         setError(null);
         setResetSent(false);
         setView('login');
+    };
+
+    const goToSignup = () => {
+        setSignupError(null);
+        setView('signup');
     };
 
     const renderLogin = () => (
@@ -149,13 +184,148 @@ export default function AuthPage() {
                 </button>
             </div>
 
-            <div className="pt-2 text-center text-sm text-gray-500">
-                Ainda não é cliente?{' '}
-                <a href="/" className="font-medium text-[#0F2747] hover:text-[#0B1D38] hover:underline">
-                    Conheça o Simulador 60 Segundos
-                </a>
+            <div className="pt-2 text-center text-sm text-gray-500 space-y-1">
+                <p>
+                    Ainda não tem conta?{' '}
+                    <button type="button" onClick={goToSignup} className="font-medium text-[#0F2747] hover:text-[#0B1D38] hover:underline">
+                        Criar conta grátis
+                    </button>
+                </p>
+                <p>
+                    <a href="/" className="text-gray-400 hover:text-gray-600 hover:underline">
+                        Conheça o Simulador 60 Segundos
+                    </a>
+                </p>
             </div>
         </form>
+    );
+
+    const renderSignup = () => (
+        <form className="space-y-6" onSubmit={handleSignup}>
+            <div className="text-center">
+                <h2 className="text-2xl font-bold text-gray-900">Criar conta grátis</h2>
+                <p className="text-sm text-gray-500 mt-1">
+                    Teste com uso restrito nas ferramentas pagas e use a Comissão sem limite, sem cartão de crédito.
+                </p>
+            </div>
+
+            {signupError && (
+                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                    <p className="text-sm text-red-700">{signupError}</p>
+                </div>
+            )}
+
+            <div>
+                <label htmlFor="signup-name" className="block text-sm font-medium text-gray-700">
+                    Nome
+                </label>
+                <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <UserIcon className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                        id="signup-name"
+                        name="name"
+                        type="text"
+                        autoComplete="name"
+                        required
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="focus:ring-[#B7F34A] focus:border-[#0F2747] block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-2.5 border"
+                        placeholder="Seu nome"
+                    />
+                </div>
+            </div>
+
+            <div>
+                <label htmlFor="signup-email" className="block text-sm font-medium text-gray-700">
+                    Email
+                </label>
+                <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Mail className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                        id="signup-email"
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        required
+                        value={signupEmail}
+                        onChange={(e) => setSignupEmail(e.target.value)}
+                        className="focus:ring-[#B7F34A] focus:border-[#0F2747] block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-2.5 border"
+                        placeholder="seu@email.com"
+                    />
+                </div>
+            </div>
+
+            <div>
+                <label htmlFor="signup-password" className="block text-sm font-medium text-gray-700">
+                    Senha
+                </label>
+                <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Lock className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                        id="signup-password"
+                        name="password"
+                        type="password"
+                        autoComplete="new-password"
+                        required
+                        minLength={6}
+                        value={signupPassword}
+                        onChange={(e) => setSignupPassword(e.target.value)}
+                        className="focus:ring-[#B7F34A] focus:border-[#0F2747] block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-2.5 border"
+                        placeholder="Mínimo 6 caracteres"
+                    />
+                </div>
+            </div>
+
+            <div>
+                <button
+                    type="submit"
+                    disabled={signupLoading}
+                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-[#0F2747] bg-[#B7F34A] hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0F2747] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {signupLoading ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                        <>
+                            <UserPlus className="w-4 h-4 mr-2" />
+                            Criar conta grátis
+                        </>
+                    )}
+                </button>
+            </div>
+
+            <div className="pt-2 text-center text-sm text-gray-500">
+                Já tem conta?{' '}
+                <button type="button" onClick={goToLogin} className="font-medium text-[#0F2747] hover:text-[#0B1D38] hover:underline">
+                    Entrar
+                </button>
+            </div>
+        </form>
+    );
+
+    const renderSignupSent = () => (
+        <div className="text-center space-y-4 py-2">
+            <div className="w-16 h-16 bg-[#E1E8F0] rounded-full flex items-center justify-center mx-auto">
+                <CheckCircle2 className="w-8 h-8 text-[#0F2747]" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900">Quase lá!</h2>
+            <p className="text-sm text-gray-600">
+                Enviamos um link de confirmação para <strong>{signupEmail}</strong>.
+                Verifique sua caixa de entrada (e também a caixa de spam) pra ativar sua conta grátis.
+            </p>
+            <button
+                onClick={goToLogin}
+                className="w-full mt-2 py-2.5 px-4 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+                Voltar para o login
+            </button>
+        </div>
     );
 
     const renderForgotPassword = () => (
@@ -253,6 +423,8 @@ export default function AuthPage() {
             <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-gray-100">
                     {view === 'login' && renderLogin()}
+                    {view === 'signup' && renderSignup()}
+                    {view === 'signup_sent' && renderSignupSent()}
                     {view === 'forgot' && renderForgotPassword()}
                 </div>
             </div>

@@ -53,8 +53,9 @@ import {
 //   recém-fornecidos (simulador_financiamento/precificacao/custo_compra/comissao).
 // =====================================================================================
 
-// Link de checkout direto do Hotmart — clicar em qualquer CTA leva pra cá agora,
-// em vez de criar um cadastro de teste grátis (fluxo antigo via Asaas).
+// Link de checkout direto do Hotmart — usado só pelo botão secundário "Já decidi,
+// quero assinar" (handleDirectPurchase). O CTA principal da LP (handleAction) agora
+// leva pro cadastro grátis em /login?cadastro=1, não mais direto pra cá.
 const HOTMART_CHECKOUT_URL = 'https://pay.hotmart.com/N106925917M';
 
 // 4 ferramentas, na ordem solicitada. Clique na lista da esquerda troca a imagem da direita.
@@ -106,17 +107,29 @@ export default function LandingPageNoBrain() {
     // O painel do desktop nunca deve quebrar por causa disso — sempre cai no item 0.
     const activeTool = TOOLS[selectedTool] ?? TOOLS[0];
 
+    // CTA principal da LP: leva pro cadastro grátis (não mais direto pro checkout).
+    // Modelo atual: cadastro é grátis, com uso restrito nas ferramentas pagas e
+    // Comissão sempre liberada. Quem já decidiu assinar direto usa handleDirectPurchase.
     const handleAction = () => {
         // Pixel da Meta: dispara o evento de Lead pro Facebook/Instagram Ads
-        // conseguirem medir conversão e otimizar entrega (não depende do redirect abaixo).
+        // conseguirem medir conversão e otimizar entrega.
         // @ts-ignore
         if (typeof window.fbq === 'function') {
             // @ts-ignore
             window.fbq('track', 'Lead');
         }
-        // Compra direta na Hotmart — não cria mais cadastro de teste grátis.
-        // gtag_report_conversion aceita qualquer URL e redireciona pra ela depois
-        // de registrar a conversão do Google Ads.
+        navigate('/login?cadastro=1');
+    };
+
+    // Só usado pelo botão secundário de quem já decidiu e quer pular direto pro
+    // pagamento, sem passar pelo cadastro grátis. gtag_report_conversion aceita
+    // qualquer URL e redireciona pra ela depois de registrar a conversão do Google Ads.
+    const handleDirectPurchase = () => {
+        // @ts-ignore
+        if (typeof window.fbq === 'function') {
+            // @ts-ignore
+            window.fbq('track', 'Lead');
+        }
         // @ts-ignore
         if (typeof window.gtag_report_conversion === 'function') {
             // @ts-ignore
@@ -177,7 +190,7 @@ export default function LandingPageNoBrain() {
                                 onClick={handleAction}
                                 className="bg-[#B7F34A] text-[#0F2747] px-6 py-2.5 rounded-xl font-extrabold text-sm hover:brightness-95 transition-all shadow-lg shadow-black/20 active:scale-95"
                             >
-                                QUERO ACESSO AGORA
+                                CRIAR CONTA GRÁTIS
                             </button>
                         </div>
 
@@ -190,7 +203,7 @@ export default function LandingPageNoBrain() {
                 {isMenuOpen && (
                     <div className="md:hidden bg-[#0F2747] border-t border-white/10 p-4 space-y-3">
                         <button onClick={handleAction} className="block w-full text-center bg-[#B7F34A] text-[#0F2747] py-3 rounded-xl font-extrabold">
-                            QUERO ACESSO AGORA
+                            CRIAR CONTA GRÁTIS
                         </button>
                         <button onClick={() => navigate('/login')} className="block w-full text-center text-white/70 text-sm py-1">
                             Já sou cliente
@@ -233,15 +246,15 @@ export default function LandingPageNoBrain() {
                                     onClick={handleAction}
                                     className="w-full sm:w-auto px-8 py-4 bg-[#B7F34A] text-[#0F2747] rounded-xl font-black text-lg hover:brightness-95 transition-all transform hover:scale-105 shadow-xl shadow-black/30 flex items-center justify-center gap-2"
                                 >
-                                    QUERO ACESSO IMEDIATO
+                                    CRIAR CONTA GRÁTIS
                                     <ArrowRight className="w-5 h-5" />
                                 </button>
                             </div>
 
                             <div className="mt-6 flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2 text-sm text-[#B8C4D1]">
-                                <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-[#B7F34A]" /> Acesso liberado na hora</span>
+                                <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-[#B7F34A]" /> Sem cartão de crédito</span>
                                 <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-[#B7F34A]" /> 4 ferramentas em 1 só app</span>
-                                <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-[#B7F34A]" /> Pagamento 100% seguro</span>
+                                <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-[#B7F34A]" /> Comissão sempre gratuita</span>
                             </div>
                         </div>
 
@@ -590,35 +603,57 @@ export default function LandingPageNoBrain() {
             <section id="oferta" className="py-20 bg-[#F3F5F7]">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <div className="inline-flex items-center gap-2 bg-[#0F2747]/5 text-[#0F2747] px-4 py-1.5 rounded-full text-xs font-bold mb-4 uppercase tracking-wide">
-                        Acesso liberado na hora
+                        Sem cartão, sem compromisso
                     </div>
-                    <h2 className="text-3xl md:text-4xl font-black text-[#0F2747] mb-4">Tenha as 4 ferramentas liberadas agora mesmo</h2>
-                    <p className="text-[#1D2633]/70 mb-12 max-w-xl mx-auto">Um pagamento por ano. Sem limite de uso, sem burocracia. Acesso liberado assim que a compra é confirmada.</p>
+                    <h2 className="text-3xl md:text-4xl font-black text-[#0F2747] mb-4">Comece grátis, sem pagar nada agora</h2>
+                    <p className="text-[#1D2633]/70 mb-12 max-w-xl mx-auto">
+                        Crie sua conta grátis e teste com uso restrito nas ferramentas de Financiamento, Precificação e Custos de Compra.
+                        A calculadora de Comissão é sempre ilimitada. Quando quiser uso ilimitado em tudo, é só assinar o Plus.
+                    </p>
 
-                    <div className="bg-[#0F2747] rounded-2xl shadow-xl p-8 sm:p-10 max-w-md mx-auto relative overflow-hidden">
-                        <div className="absolute top-0 right-0 bg-[#B7F34A] text-[#0F2747] text-xs font-black px-3 py-1 rounded-bl-lg uppercase">Mais popular</div>
-                        <h3 className="text-xl font-bold text-white">Plano Plus</h3>
-                        <div className="my-4">
-                            <div className="flex items-center justify-center gap-2">
-                                <span className="text-base text-[#B8C4D1]/60 line-through">R$ 97,00</span>
-                                <span className="text-[11px] font-black text-[#0F2747] bg-[#B7F34A] px-2 py-0.5 rounded-full uppercase tracking-wide">-31%</span>
+                    <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto items-stretch text-left">
+                        {/* Grátis — plano de entrada, é aqui que a maioria deve começar */}
+                        <div className="bg-white border-2 border-[#B7F34A] rounded-2xl shadow-xl p-8 relative overflow-hidden flex flex-col">
+                            <div className="absolute top-0 right-0 bg-[#B7F34A] text-[#0F2747] text-xs font-black px-3 py-1 rounded-bl-lg uppercase">Comece por aqui</div>
+                            <h3 className="text-xl font-bold text-[#0F2747]">Grátis</h3>
+                            <div className="my-4">
+                                <span className="text-5xl font-black text-[#0F2747]">R$ 0</span>
                             </div>
-                            <div className="mt-1">
-                                <span className="text-5xl font-black text-white">R$ 67,00</span>
-                                <span className="text-[#B8C4D1]">/ano</span>
-                            </div>
-                            <div className="text-sm text-[#B8C4D1] mt-1">ou 3x de R$ 22,33</div>
+                            <ul className="space-y-3 mb-8 flex-1">
+                                <PricingCheckDark text="5 simulações grátis pra testar" />
+                                <PricingCheckDark text="Financiamento, Precificação e Custos" />
+                                <PricingCheckDark text="Comissão sempre gratuita e ilimitada" />
+                            </ul>
+                            <button onClick={handleAction} className="w-full py-4 bg-[#0F2747] text-white font-black rounded-xl hover:brightness-110 transition-colors shadow-lg">
+                                CRIAR CONTA GRÁTIS
+                            </button>
+                            <p className="mt-3 text-xs text-[#1D2633]/60">Sem cartão de crédito. Leva menos de 1 minuto.</p>
                         </div>
-                        <ul className="space-y-3 mb-8 text-left">
-                            <PricingCheck text="Simulações ILIMITADAS" />
-                            <PricingCheck text="As 4 ferramentas liberadas" />
-                            <PricingCheck text="Envio de resumo pelo WhatsApp" />
-                            <PricingCheck text="Suporte prioritário" />
-                        </ul>
-                        <button onClick={handleAction} className="w-full py-4 bg-[#B7F34A] text-[#0F2747] font-black rounded-xl hover:brightness-95 transition-colors shadow-lg">
-                            GARANTIR ACESSO AGORA
-                        </button>
-                        <p className="mt-3 text-xs text-[#B8C4D1]">Pagamento processado com segurança pela Hotmart. Acesso liberado por e-mail assim que a compra for aprovada.</p>
+
+                        {/* Plus — pra quem já decidiu e quer pular direto pro uso ilimitado */}
+                        <div className="bg-[#0F2747] rounded-2xl shadow-xl p-8 flex flex-col">
+                            <h3 className="text-xl font-bold text-white">Plus</h3>
+                            <div className="my-4">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-base text-[#B8C4D1]/60 line-through">R$ 97,00</span>
+                                    <span className="text-[11px] font-black text-[#0F2747] bg-[#B7F34A] px-2 py-0.5 rounded-full uppercase tracking-wide">-31%</span>
+                                </div>
+                                <div className="mt-1">
+                                    <span className="text-5xl font-black text-white">R$ 67,00</span>
+                                    <span className="text-[#B8C4D1]">/ano</span>
+                                </div>
+                                <div className="text-sm text-[#B8C4D1] mt-1">ou 3x de R$ 22,33</div>
+                            </div>
+                            <ul className="space-y-3 mb-8 flex-1">
+                                <PricingCheck text="Simulações ILIMITADAS" />
+                                <PricingCheck text="As 4 ferramentas liberadas" />
+                                <PricingCheck text="Envio de resumo pelo WhatsApp" />
+                            </ul>
+                            <button onClick={handleDirectPurchase} className="w-full py-4 bg-[#B7F34A] text-[#0F2747] font-black rounded-xl hover:brightness-95 transition-colors shadow-lg">
+                                JÁ DECIDI, QUERO ASSINAR
+                            </button>
+                            <p className="mt-3 text-xs text-[#B8C4D1]">Pagamento processado com segurança pela Hotmart.</p>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -644,25 +679,32 @@ export default function LandingPageNoBrain() {
                             index={0}
                             open={openFaq}
                             setOpen={setOpenFaq}
-                            q="O cálculo de financiamento é exato?"
-                            a="Não. O resultado é uma estimativa para ajudar na conversa inicial com o cliente. A condição definitiva depende da análise da instituição financeira, do CET, dos seguros, do IOF, das tarifas e das regras de cada banco."
+                            q="Preciso pagar pra testar?"
+                            a="Não. Você cria uma conta grátis, sem cartão de crédito, e testa com uso restrito nas ferramentas de Financiamento, Precificação e Custos de Compra. A calculadora de Comissão é sempre gratuita e ilimitada. Quando quiser usar tudo sem limite, é só assinar o Plus."
                         />
                         <FaqItem
                             index={1}
                             open={openFaq}
                             setOpen={setOpenFaq}
+                            q="O cálculo de financiamento é exato?"
+                            a="Não. O resultado é uma estimativa para ajudar na conversa inicial com o cliente. A condição definitiva depende da análise da instituição financeira, do CET, dos seguros, do IOF, das tarifas e das regras de cada banco."
+                        />
+                        <FaqItem
+                            index={2}
+                            open={openFaq}
+                            setOpen={setOpenFaq}
                             q="A ferramenta substitui o banco ou correspondente?"
                             a="Não. Ela oferece uma base aproximada para você apresentar cenários durante o atendimento. A aprovação e as condições oficiais continuam sendo responsabilidade da instituição financeira."
                         />
-                        <FaqItem index={2} open={openFaq} setOpen={setOpenFaq} q="Preciso entender de matemática?" a="Não. Você informa os dados e a aplicação organiza os resultados pra você." />
-                        <FaqItem index={3} open={openFaq} setOpen={setOpenFaq} q="Funciona apenas para financiamento?" a="Não. São 4 ferramentas: financiamento, valor de anúncio, custos da compra e comissão." />
-                        <FaqItem index={4} open={openFaq} setOpen={setOpenFaq} q="Como recebo o acesso depois de comprar?" a="Assim que o pagamento é aprovado, você recebe um e-mail com um link seguro para criar sua senha e já começar a usar o Simulador." />
+                        <FaqItem index={3} open={openFaq} setOpen={setOpenFaq} q="Preciso entender de matemática?" a="Não. Você informa os dados e a aplicação organiza os resultados pra você." />
+                        <FaqItem index={4} open={openFaq} setOpen={setOpenFaq} q="Funciona apenas para financiamento?" a="Não. São 4 ferramentas: financiamento, valor de anúncio, custos da compra e comissão." />
+                        <FaqItem index={5} open={openFaq} setOpen={setOpenFaq} q="Como funciona a assinatura Plus?" a="Depois de gastar as simulações grátis (ou se você já quiser começar ilimitado), a assinatura Plus libera uso ilimitado nas 4 ferramentas. O pagamento é processado pela Hotmart e o acesso é liberado assim que a compra é aprovada." />
                         <FaqItem
-                            index={5}
+                            index={6}
                             open={openFaq}
                             setOpen={setOpenFaq}
                             q="Existe garantia?"
-                            a="Sim. A compra é processada pela Hotmart, plataforma que aplica a política de garantia e reembolso exibida no próprio checkout no momento do pagamento."
+                            a="Sim. A compra do Plus é processada pela Hotmart, plataforma que aplica a política de garantia e reembolso exibida no próprio checkout no momento do pagamento."
                         />
                     </div>
                 </div>
@@ -745,7 +787,7 @@ export default function LandingPageNoBrain() {
                     onClick={handleAction}
                     className="w-full py-3.5 bg-[#B7F34A] text-[#0F2747] rounded-xl font-black text-base shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2"
                 >
-                    QUERO ACESSO AGORA <ArrowRight className="w-4 h-4" />
+                    CRIAR CONTA GRÁTIS <ArrowRight className="w-4 h-4" />
                 </button>
             </div>
         </div>
@@ -788,6 +830,16 @@ function PricingCheck({ text }: { text: string }) {
         <li className="flex items-center gap-3">
             <CheckCircle2 className="w-5 h-5 text-[#B7F34A] flex-shrink-0" />
             <span className="text-[#D9E2EC]">{text}</span>
+        </li>
+    );
+}
+
+// Mesma marcação do PricingCheck, só que pra cartão de fundo claro (card Grátis).
+function PricingCheckDark({ text }: { text: string }) {
+    return (
+        <li className="flex items-center gap-3">
+            <CheckCircle2 className="w-5 h-5 text-[#0F2747] flex-shrink-0" />
+            <span className="text-[#1D2633]">{text}</span>
         </li>
     );
 }

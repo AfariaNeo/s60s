@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, PieChart, Users, DollarSign, Percent, AlertCircle } from 'lucide-react';
+import { Briefcase, PieChart, Users, DollarSign, Percent, AlertCircle, Heart, Copy, Check } from 'lucide-react';
 import { CommissionParams, CommissionResult } from '../types';
 import { formatCurrency } from '../utils/finance';
 
-
+// Chave Pix pra doação — Comissão é a única aba sempre gratuita, então é aqui que fica
+// o "apoie o projeto" opcional. TROCAR pela chave Pix real antes de publicar.
+const PIX_KEY = '11994491533';
 
 interface CommissionTabProps {
     params: CommissionParams;
@@ -23,6 +25,17 @@ export default function CommissionTab({
 
     // Local state for formatted display
     const [propertyValueDisplay, setPropertyValueDisplay] = useState('');
+    const [pixCopied, setPixCopied] = useState(false);
+
+    const handleCopyPix = async () => {
+        try {
+            await navigator.clipboard.writeText(PIX_KEY);
+            setPixCopied(true);
+            setTimeout(() => setPixCopied(false), 2500);
+        } catch {
+            // Clipboard pode falhar (permissão, navegador antigo) — sem travar a tela por isso.
+        }
+    };
 
     useEffect(() => {
         if (params.propertyValue) {
@@ -249,6 +262,34 @@ export default function CommissionTab({
                         </p>
                     </div>
                 )}
+            </div>
+
+            {/* Doação opcional — só aparece aqui porque Comissão é a única aba sempre
+                gratuita. Não é obrigatório, não bloqueia nada, é só um "apoie se quiser". */}
+            <div className="lg:col-span-12">
+                <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center gap-4 justify-between">
+                    <div className="flex items-center gap-3 text-center sm:text-left">
+                        <Heart className="w-6 h-6 text-[#B7F34A] flex-shrink-0" />
+                        <div>
+                            <p className="text-sm font-bold text-gray-800">Essa calculadora é gratuita pra sempre</p>
+                            <p className="text-xs text-gray-500">Se ela te ajuda no dia a dia, considere apoiar o projeto com um Pix, qualquer valor.</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={handleCopyPix}
+                        className="flex-shrink-0 flex items-center gap-2 bg-gray-50 border border-gray-200 hover:bg-gray-100 text-gray-700 text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
+                    >
+                        {pixCopied ? (
+                            <>
+                                <Check className="w-4 h-4 text-green-600" /> Chave copiada!
+                            </>
+                        ) : (
+                            <>
+                                <Copy className="w-4 h-4" /> Copiar chave Pix
+                            </>
+                        )}
+                    </button>
+                </div>
             </div>
 
         </div>

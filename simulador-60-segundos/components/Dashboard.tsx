@@ -9,7 +9,7 @@ import CommissionTab from './CommissionTab';
 import PricingTab from './PricingTab';
 import CostsTab from './CostsTab';
 import { useSimulation } from '../hooks/useSimulation';
-import { useUserProfile } from '../hooks/useUserProfile';
+import { useUserProfile, FREE_USAGE_LIMIT } from '../hooks/useUserProfile';
 import { useAnalytics } from '../hooks/useAnalytics';
 
 // --- TIPOS ---
@@ -35,12 +35,15 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
     const displayProfile = profile ? { ...profile, name: userName } : null;
 
     // --- ACESSO ---
-    // Modelo atual: acesso completo exige assinatura ativa (plan === 'plus').
-    // Não existe mais trial gratuito — quem compra já entra pago, e os 7 dias que
-    // existem são o prazo de arrependimento/garantia da Hotmart (reembolso, não uso
-    // liberado antes de pagar). O hotmart-webhook já rebaixa pra 'free' automaticamente
-    // em caso de reembolso/chargeback/cancelamento.
-    const hasFullAccess = userPlan === 'plus';
+    // Modelo atual: cadastro é gratuito. Quem é 'free' tem direito a FREE_USAGE_LIMIT
+    // usos no total (sem reset mensal), somando Financiamento + Precificação + Custos
+    // de Compra num único contador (usageCount). Comissão nunca entra nessa conta, é
+    // sempre gratuita (ver handleCommissionCalculate mais abaixo). Depois de gastar
+    // os usos grátis, só com o plano Plus. O hotmart-webhook rebaixa pra 'free'
+    // automaticamente em caso de reembolso/chargeback/cancelamento.
+    const usageCount = profile?.usageCount ?? 0;
+    const freeUsesLeft = Math.max(0, FREE_USAGE_LIMIT - usageCount);
+    const hasFullAccess = userPlan === 'plus' || usageCount < FREE_USAGE_LIMIT;
 
     // --- UI STATE ---
     const [activeTab, setActiveTab] = useState<Tab>('financing');
@@ -225,6 +228,22 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                             {userPlan === 'plus' && <Crown className="w-3 h-3" />}
                             {userPlan === 'plus' ? 'PLUS' : 'Gratuito'}
                         </div>
+
+                        {/* Contador de usos grátis restantes — só pra quem ainda não é Plus.
+                            É a única "comunicação" da mudança de regra dentro do app (sem modal
+                            de aviso, combinado com o usuário): a interface fala por si. */}
+                        {userPlan !== 'plus' && (
+                            <div
+                                className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
+                                    freeUsesLeft === 0
+                                        ? 'bg-red-50 text-red-600'
+                                        : 'bg-[#B7F34A]/20 text-[#0F2747]'
+                                    }`}
+                                title="Financiamento, Precificação e Custos de Compra somados. Comissão é sempre gratuita."
+                            >
+                                {freeUsesLeft > 0 ? `${freeUsesLeft}/${FREE_USAGE_LIMIT} grátis` : 'Limite grátis atingido'}
+                            </div>
+                        )}
 
                         {userPlan !== 'plus' && (
                             <button
