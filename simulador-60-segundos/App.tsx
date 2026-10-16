@@ -14,6 +14,7 @@ import PoliticaDePrivacidade from './components/PoliticaDePrivacidade';
 import PoliticaDeCookies from './components/PoliticaDeCookies';
 import CancelamentoReembolso from './components/CancelamentoReembolso';
 import AvisoLegalSimulacoes from './components/AvisoLegalSimulacoes';
+import IndicadoresEconomicos from './components/IndicadoresEconomicos';
 import CookieConsentBanner from './components/CookieConsentBanner';
 import { trackEvent } from './services/analyticsService';
 import { useAdminAccess } from './hooks/useAdminAccess';
@@ -129,6 +130,14 @@ export default function SimulatorApp() {
         <Route
           path="/login"
           element={!user ? <AuthPage /> : <Navigate to="/" />}
+        />
+        {/* Só acessível a partir do banner dentro da aba Financiamento (não aparece
+            em nenhuma outra aba do Dashboard). O componente checa hasFullAccess
+            internamente e redireciona pra "/" quem não for Plus — a checagem aqui
+            só cobre o caso de não estar logado, igual ao padrão de /admin acima. */}
+        <Route
+          path="/indicadores-economicos"
+          element={user ? <IndicadoresEconomicos /> : <Navigate to="/" />}
         />
         <Route
           path="/"

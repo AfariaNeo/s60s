@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { DollarSign, Printer, MessageCircle, AlertTriangle, TrendingDown, TrendingUp, Wallet, PiggyBank, Calendar, Info } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { DollarSign, Printer, MessageCircle, AlertTriangle, TrendingDown, TrendingUp, Wallet, PiggyBank, Calendar, Info, Landmark, ArrowRight } from 'lucide-react';
 import { SimulationParams, ComparisonResult } from '../types';
 import { formatCurrency } from '../utils/finance';
 import ComparisonChart from './ComparisonChart';
@@ -33,6 +34,7 @@ export default function FinancingTab({
     onPrint,
     onShare
 }: FinancingTabProps) {
+    const navigate = useNavigate();
 
     // Local state for formatted input display
     const [propertyValueDisplay, setPropertyValueDisplay] = useState('');
@@ -163,6 +165,35 @@ export default function FinancingTab({
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-300 print:block">
+
+            {/* Banner de entrada pra tela de Indicadores Econômicos (Selic, TR, IPCA,
+                Poupança e taxa por banco) — fica só aqui, na aba Financiamento, porque
+                é a única ferramenta onde esse dado é relevante. Sempre visível, não
+                depende de já ter calculado nada. Só aparece pra quem é Plus: a tela de
+                Indicadores é benefício da assinatura (quem é grátis seria devolvido pra
+                tela inicial se clicasse). */}
+            {profile?.plan === 'plus' && (
+            <div className="lg:col-span-12 print:hidden">
+                <button
+                    onClick={() => navigate('/indicadores-economicos')}
+                    className="w-full flex items-center justify-between gap-3 bg-gradient-to-r from-[#0F2747] to-[#17325e] rounded-xl px-4 sm:px-5 py-3.5 sm:py-4 hover:brightness-110 transition-all text-left"
+                >
+                    <div className="flex items-center gap-3 min-w-0">
+                        <span className="relative flex-shrink-0">
+                            <Landmark className="w-5 h-5 text-[#B7F34A]" />
+                            <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-[#B7F34A]" />
+                        </span>
+                        <div className="min-w-0">
+                            <p className="text-sm font-bold text-white truncate">Indicadores Econômicos</p>
+                            <p className="text-xs text-[#C7D4E3] truncate">Selic, TR, IPCA e taxa por banco em tempo real, confira antes de simular</p>
+                        </div>
+                    </div>
+                    <span className="hidden sm:flex items-center gap-1 flex-shrink-0 bg-[#B7F34A] text-[#0F2747] text-xs font-extrabold px-3 py-1.5 rounded-full">
+                        Consultar <ArrowRight className="w-3.5 h-3.5" />
+                    </span>
+                </button>
+            </div>
+            )}
 
             {/* 7. Disclaimer Note */}
             <div className="lg:col-span-12 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg print:border-l-0 print:border p-2 print:text-xs print:mb-4">
