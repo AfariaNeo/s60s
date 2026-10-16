@@ -81,9 +81,15 @@ const mesesAtras = (n: number) => {
 
 export default function IndicadoresEconomicos() {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, loading: loadingAuth } = useAuth();
     const { profile, loading: loadingProfile } = useUserProfile(user);
     const hasFullAccess = profile?.plan === 'plus';
+    // Este componente tem a sua própria instância de useAuth: no primeiro render o
+    // `user` ainda é null (a sessão está sendo lida) e o perfil ainda não chegou.
+    // Sem esperar por isso, a guarda de acesso abaixo redirecionava pra "/" na hora
+    // (a tela "piscava" e voltava). Só decidimos o redirecionamento depois que a
+    // sessão e o perfil terminarem de carregar.
+    const aguardandoAcesso = loadingAuth || loadingProfile || (!!user && !profile);
 
     const [loadingData, setLoadingData] = useState(true);
     const [erroCarregamento, setErroCarregamento] = useState<string | null>(null);
@@ -97,7 +103,7 @@ export default function IndicadoresEconomicos() {
     // Só busca os dados se a pessoa realmente tiver acesso — evita gastar uma
     // requisição à toa pra quem vai ser redirecionado de qualquer forma.
     useEffect(() => {
-        if (loadingProfile || !hasFullAccess) return;
+        if (aguardandoAcesso || !hasFullAccess) return;
 
         let cancelado = false;
 
@@ -127,7 +133,7 @@ export default function IndicadoresEconomicos() {
 
         fetchData();
         return () => { cancelado = true; };
-    }, [loadingProfile, hasFullAccess]);
+    }, [aguardandoAcesso, hasFullAccess]);
 
     const latestByIndicador = useMemo(() => {
         const map: Partial<Record<IndicadorKey, IndicadorRow>> = {};
@@ -179,7 +185,7 @@ export default function IndicadoresEconomicos() {
     }, [ultimaAtualizacao]);
 
     // --- Guardas de acesso (depois de todos os hooks, pra não violar as regras do React) ---
-    if (loadingProfile) {
+    if (aguardandoAcesso) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <Loader2 className="w-8 h-8 text-[#0F2747] animate-spin" />
