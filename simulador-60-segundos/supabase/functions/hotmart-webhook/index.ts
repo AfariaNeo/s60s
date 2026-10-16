@@ -58,6 +58,25 @@ Deno.serve(async (req: Request) => {
             return new Response(JSON.stringify({ received: true, ignored: true }), { status: 200 })
         }
 
+        // Filtro por produto: só os produtos listados em HOTMART_PLUS_PRODUCT_IDS (IDs
+        // numéricos da Hotmart, separados por vírgula) liberam ou revogam o Plus. Isso
+        // impede que a venda de OUTRO produto da mesma conta (ex: a planilha em Excel,
+        // order bump, etc.) libere o app por engano, ou que o reembolso dela rebaixe quem
+        // tem o Plus de verdade. Se a variável não estiver configurada, mantém o
+        // comportamento antigo (qualquer produto) e avisa no log.
+        const allowedProductIds = (Deno.env.get('HOTMART_PLUS_PRODUCT_IDS') || '')
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        const productId = String(payload?.data?.product?.id ?? '')
+
+        if (allowedProductIds.length === 0) {
+            console.warn('HOTMART_PLUS_PRODUCT_IDS não configurado: qualquer produto vai liberar o Plus.')
+        } else if (!allowedProductIds.includes(productId)) {
+            console.log(`Produto ${productId || '(sem id)'} não libera o Plus. Evento ignorado: ${eventType}`)
+            return new Response(JSON.stringify({ received: true, ignored: true, reason: 'product_not_allowed' }), { status: 200 })
+        }
+
         const buyerEmail: string | undefined = payload?.data?.buyer?.email
         const buyerName: string | undefined =
             payload?.data?.buyer?.name ||
