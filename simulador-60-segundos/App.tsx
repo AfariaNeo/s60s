@@ -15,6 +15,7 @@ import PoliticaDeCookies from './components/PoliticaDeCookies';
 import CancelamentoReembolso from './components/CancelamentoReembolso';
 import AvisoLegalSimulacoes from './components/AvisoLegalSimulacoes';
 import IndicadoresEconomicos from './components/IndicadoresEconomicos';
+import LandingPlanilha from './components/LandingPlanilha';
 import CookieConsentBanner from './components/CookieConsentBanner';
 import { trackEvent } from './services/analyticsService';
 import { useAdminAccess } from './hooks/useAdminAccess';
@@ -139,6 +140,13 @@ export default function SimulatorApp() {
           path="/indicadores-economicos"
           element={user ? <IndicadoresEconomicos /> : <Navigate to="/" />}
         />
+        {/* Página de vendas da planilha em Excel (tráfego pago). Pública de propósito:
+            abre igual pra quem está logado ou não, sem redirecionar pro Dashboard. */}
+        <Route path="/planilha" element={<LandingPlanilha publico="geral" />} />
+        <Route path="/planilha/corretor" element={<LandingPlanilha publico="corretor" />} />
+        {/* RASCUNHO (copy em LandingPlanilha.tsx): descomente só depois de definir a licença para times.
+        <Route path="/planilha/imobiliaria" element={<LandingPlanilha publico="imobiliaria" />} />
+        */}
         <Route
           path="/"
           element={user ? <Dashboard user={user} signOut={signOut} /> : <LandingPageNoBrain />}
