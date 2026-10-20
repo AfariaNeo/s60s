@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Calculator,
@@ -331,6 +331,8 @@ export default function LandingPageNoBrain() {
                             Sem fazer conta de cabeça. Sem montar planilha. Sem depender de correspondente pra toda pergunta.
                         </p>
                     </div>
+
+                    <DemoVideo />
 
                     {/* DESKTOP (md+): lista à esquerda, imagem fixa à direita — clique troca a imagem */}
                     <div className="hidden md:grid bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden md:grid-cols-2">
@@ -795,6 +797,42 @@ export default function LandingPageNoBrain() {
 }
 
 // --- SUBCOMPONENTES ---
+
+// Demonstração animada (4:5). Só baixa e toca quando aparece na tela, sempre sem som
+// (navegadores bloqueiam autoplay com áudio); o visitante ativa o som pelos controles.
+function DemoVideo() {
+    const ref = useRef<HTMLVideoElement>(null);
+    useEffect(() => {
+        const video = ref.current;
+        if (!video || !('IntersectionObserver' in window)) return;
+        const observer = new IntersectionObserver(([entry]) => {
+            if (entry.isIntersecting) video.play().catch(() => {});
+            else video.pause();
+        }, { threshold: 0.4 });
+        observer.observe(video);
+        return () => observer.disconnect();
+    }, []);
+
+    return (
+        <div className="max-w-[360px] sm:max-w-[420px] mx-auto mb-14">
+            <div className="rounded-3xl overflow-hidden shadow-2xl ring-1 ring-[#0F2747]/10 bg-[#0F2747]">
+                <video
+                    ref={ref}
+                    className="w-full h-auto block aspect-[4/5]"
+                    src="/videos/vsl-simulador.mp4"
+                    poster="/videos/vsl-simulador-poster.jpg"
+                    muted
+                    loop
+                    playsInline
+                    controls
+                    preload="none"
+                    aria-label="Demonstração animada do Simulador 60 Segundos"
+                />
+            </div>
+            <p className="text-center text-xs text-[#1D2633]/50 mt-3">Demonstração animada · toque no som para ouvir</p>
+        </div>
+    );
+}
 
 function RuminationCard({ text }: { text: string }) {
     return (
