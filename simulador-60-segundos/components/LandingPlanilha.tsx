@@ -43,6 +43,10 @@ const VIDEO_URL = '';
 
 const PRECO_LABEL = 'R$ 37';
 
+// Print real da planilha na seção "O que você leva". Vazio = a seção mostra só a lista.
+// Quando tiver o print do visual novo, salve em public/images e coloque o caminho aqui (ex.: '/images/planilha_print.png').
+const PRINT_PLANILHA = '/images/planilha_print.png';
+
 const checkoutPronto = PLANILHA_CHECKOUT_URL.startsWith('https://pay.hotmart.com/');
 
 type FaqItem = { q: string; a: string; link?: { label: string; to: string } };
@@ -72,8 +76,8 @@ const FAQ: FaqItem[] = [
         a: 'É uma simulação aproximada, com a taxa que você informar. Ela não inclui seguros, tarifas nem TR, e a aprovação do crédito depende da análise de cada instituição. Por isso a proposta do banco pode vir com outra parcela. Use a planilha como referência e confirme os números finais com a instituição.',
     },
     {
-        q: 'Até quantos meses ela calcula?',
-        a: 'Até 420 meses (35 anos), com a tabela completa parcela a parcela.',
+        q: 'Quais prazos e entradas ela aceita?',
+        a: 'Prazos de 24 a 420 meses (até 35 anos) e entrada de 10% a 90% do valor do imóvel, com a tabela completa parcela a parcela.',
     },
     {
         q: 'Vou ter que pagar mensalidade ou por simulação?',
@@ -111,40 +115,42 @@ export type Publico = 'geral' | 'corretor' | 'imobiliaria';
 
 const ICONES = { lock: Lock, hourglass: Hourglass, file: FileWarning, scale: Scale, clock: Clock } as const;
 
-// Exemplo real tirado da própria planilha (R$ 400.000 financiados, 420 meses).
+// Exemplo real tirado da própria planilha (valores padrão do arquivo: imóvel de R$ 400.000,
+// entrada de 20%, 420 meses, taxa efetiva de 14% a.a.). Se mudar os valores padrão do arquivo, atualize aqui.
 const EXEMPLO = {
+    legenda: 'Exemplo: imóvel de R$ 400.000, entrada de 20%, 420 meses, juros de 14% a.a.',
     linhas: [
-        { r: 'Parcela inicial', sac: '4.446,22', price: '3.586,82' },
-        { r: 'Parcela final', sac: '960,70', price: '3.586,82' },
-        { r: 'Total de juros', sac: '735.452,80', price: '1.106.464,79' },
-        { r: 'Valor total', sac: '1.135.452,80', price: '1.506.464,79' },
+        { r: 'Parcela inicial', sac: '4.275,14', price: '3.549,41' },
+        { r: 'Parcela final', sac: '770,27', price: '3.549,41' },
+        { r: 'Total de juros', sac: '739.535,47', price: '1.170.753,94' },
+        { r: 'Valor total', sac: '1.059.535,47', price: '1.490.753,94' },
     ],
-    renda: '14.820,73',
+    renda: '14.250,46',
 };
 
 // "Comer com os olhos": o resultado da planilha, nítido e legível já na primeira dobra.
 function PlanilhaZoom() {
     return (
         <div>
-            <div className="rounded-2xl overflow-hidden bg-white shadow-2xl shadow-black/40 border border-white/20 text-[#1D2633]">
-                <div className="bg-[#4472C4] text-white px-4 py-2.5 text-sm sm:text-base font-bold text-center">
-                    Simulador de Financiamento Imobiliário
+            <div className="rounded-2xl overflow-hidden bg-[#203864] shadow-2xl shadow-black/40 border border-white/25 text-white">
+                <div className="bg-[#00204F] px-4 py-3 text-base sm:text-lg font-bold text-center">
+                    Simulador de Financiamento <span className="text-[#ED7D31]">Imobiliário</span>
                 </div>
-                <p className="px-4 pt-3 text-[11px] sm:text-xs text-gray-500 font-bold uppercase tracking-wide">
-                    Exemplo: R$ 400.000 financiados em 420 meses
+                <p className="px-4 pt-3 text-[11px] sm:text-xs text-[#B8C4D1] font-bold uppercase tracking-wide leading-snug">
+                    {EXEMPLO.legenda}
                 </p>
                 <table className="w-full text-sm sm:text-base mt-2">
                     <thead>
-                        <tr className="bg-[#4472C4] text-white">
+                        <tr className="bg-[#00204F] text-[#ED7D31]">
                             <th className="py-2 px-3 text-left font-semibold"></th>
                             <th className="py-2 px-2 text-right font-bold">SAC</th>
                             <th className="py-2 px-3 text-right font-bold">PRICE</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {EXEMPLO.linhas.map((l, i) => (
-                            <tr key={l.r} className={i % 2 === 0 ? 'bg-[#E9EFF9]' : 'bg-white'}>
-                                <td className="py-2.5 px-3 font-semibold text-[#0F2747] whitespace-nowrap">{l.r}</td>
+                        {EXEMPLO.linhas.map((l) => (
+                            <tr key={l.r} className="border-t border-[#3B5B92]">
+                                <td className="py-2.5 px-3 font-semibold whitespace-nowrap">{l.r}</td>
                                 <td className="py-2.5 px-2 text-right font-bold tabular-nums">{l.sac}</td>
                                 <td className="py-2.5 px-3 text-right font-bold tabular-nums">{l.price}</td>
                             </tr>
@@ -406,7 +412,6 @@ export default function LandingPlanilha({ publico = 'corretor' }: { publico?: Pu
                                             controls
                                             playsInline
                                             preload="metadata"
-                                            poster="/images/planilha_preview.png"
                                         />
                                     ) : (
                                         <iframe
@@ -493,19 +498,23 @@ export default function LandingPlanilha({ publico = 'corretor' }: { publico?: Pu
                     <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#0F2747] text-center tracking-tight mb-8">
                         O que você leva
                     </h2>
-                    <div className="rounded-2xl border border-gray-200 shadow-lg overflow-x-auto">
-                        <img
-                            src="/images/planilha_topo.png"
-                            alt="Print real da planilha: resultados SAC e PRICE, renda mínima e tabelas parcela a parcela"
-                            className="block w-full min-w-[900px] h-auto"
-                            loading="lazy"
-                        />
-                    </div>
-                    <p className="mt-3 text-center text-sm text-gray-500">
-                        Print real da planilha: resultados no topo e as tabelas SAC e PRICE parcela a parcela.
-                        <span className="md:hidden"> Arraste para o lado para ver tudo.</span>
-                    </p>
-                    <ul className="mt-10 grid sm:grid-cols-2 gap-x-10 gap-y-6">
+                    {PRINT_PLANILHA && (
+                        <>
+                            <div className="rounded-2xl border border-gray-200 shadow-lg overflow-x-auto">
+                                <img
+                                    src={PRINT_PLANILHA}
+                                    alt="Print real da planilha: resultados SAC e PRICE, renda mínima e tabelas parcela a parcela"
+                                    className="block w-full min-w-[900px] h-auto"
+                                    loading="lazy"
+                                />
+                            </div>
+                            <p className="mt-3 text-center text-sm text-gray-500">
+                                Print real da planilha: resultados no topo e as tabelas SAC e PRICE parcela a parcela.
+                                <span className="md:hidden"> Arraste para o lado para ver tudo.</span>
+                            </p>
+                        </>
+                    )}
+                    <ul className="mt-2 grid sm:grid-cols-2 gap-x-10 gap-y-6">
                         {FEATURES.map((f) => (
                             <li key={f.t} className="flex items-start gap-3">
                                 <CheckCircle2 className="w-6 h-6 text-[#0F2747] flex-shrink-0 mt-0.5" />
