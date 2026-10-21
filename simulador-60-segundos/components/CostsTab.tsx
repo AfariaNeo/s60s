@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { ScrollText, DollarSign, Building, Percent, Landmark, AlertCircle, Printer, MessageCircle } from 'lucide-react';
 import { PurchaseCostParams, PurchaseCostResult } from '../types';
 import { formatCurrency } from '../utils/finance';
+import { agentShareLines } from '../utils/agentSignature';
 
 interface CostsTabProps {
     params: PurchaseCostParams;
@@ -11,6 +12,7 @@ interface CostsTabProps {
     onCalculate: () => void;
     onPrint?: () => void;
     onShare?: (text: string) => void;
+    profile?: any;
 }
 
 export default function CostsTab({
@@ -19,12 +21,14 @@ export default function CostsTab({
     results,
     onCalculate,
     onPrint,
-    onShare
+    onShare,
+    profile
 }: CostsTabProps) {
 
     const generateShareText = () => {
         if (!results) return '';
         return `*Simulação de Custos de Compra*\n\n` +
+            agentShareLines(profile) +
             `💰 *Valor do Imóvel:* ${formatCurrency(params.propertyValue)}\n` +
             `📉 *Entrada/Sinal:* ${params.downPaymentPercent}% (${formatCurrency(results.downPaymentValue)})\n` +
             `🏛️ *ITBI:* ${params.itbiPercent}% (${formatCurrency(results.itbiValue)})\n` +

@@ -362,6 +362,7 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                         params={pricingParams}
                         setParams={setPricingParams}
                         results={pricingResults}
+                        profile={displayProfile}
                         onCalculate={handlePricingCalculate}
                         onReset={() => setPricingResults(null)}
                         onPrint={() => {
@@ -389,6 +390,7 @@ export default function Dashboard({ user, signOut }: DashboardProps) {
                         params={costParams}
                         setParams={setCostParams}
                         results={costResults}
+                        profile={displayProfile}
                         onCalculate={handleCostsCalculate}
                         onPrint={() => {
                             if (!hasFullAccess) {

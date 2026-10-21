@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { DollarSign, Printer, MessageCircle, AlertTriangle, TrendingDown, TrendingUp, Wallet, PiggyBank, Calendar, Info, Landmark, ArrowRight } from 'lucide-react';
 import { SimulationParams, ComparisonResult } from '../types';
 import { formatCurrency } from '../utils/finance';
+import { agentShareLines } from '../utils/agentSignature';
 import ComparisonChart from './ComparisonChart';
 
 // Entrada pode ser preenchida em % ou em R$ — o resultado sempre mostra os dois,
@@ -134,17 +135,13 @@ export default function FinancingTab({
         if (!results) return '';
         const sac = results.sac;
         const price = results.price;
-        const agentName = profile?.name || 'Corretor';
-        const creciText = profile?.creciNumber && profile?.creciState
-            ? `\n🧾 *CRECI:* ${profile.creciNumber} / ${profile.creciState}`
-            : '';
 
         const cetLine = params.bankCostPercent
             ? `📈 *CET aproximado:* ${cetAproximado.toFixed(2)}% a.a. (juros + custo bancário aproximado)\n`
             : '';
 
         return `*Simulação de Financiamento*\n\n` +
-            `👤 *Corretor:* ${agentName}${creciText}\n` +
+            agentShareLines(profile) +
             `💰 *Imóvel:* ${formatCurrency(params.propertyValue)}\n` +
             `📉 *Entrada:* ${params.downPaymentPercent.toFixed(1)}% (${formatCurrency(downPaymentValue)})\n` +
             `📅 *Prazo:* ${params.months} meses\n` +

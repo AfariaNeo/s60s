@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Tag, DollarSign, ArrowRight, Percent, Minus, Plus, Wallet, AlertCircle, Printer, MessageCircle } from 'lucide-react';
 import { PricingParams, PricingResult } from '../types';
 import { formatCurrency } from '../utils/finance';
+import { agentShareLines } from '../utils/agentSignature';
 
 interface PricingTabProps {
     params: PricingParams;
@@ -12,6 +13,7 @@ interface PricingTabProps {
     onReset?: () => void;
     onPrint?: () => void;
     onShare?: (text: string) => void;
+    profile?: any;
 }
 
 export default function PricingTab({
@@ -21,12 +23,14 @@ export default function PricingTab({
     onCalculate,
     onReset,
     onPrint,
-    onShare
+    onShare,
+    profile
 }: PricingTabProps) {
 
     const generateShareText = () => {
         if (!results) return '';
         return `*Simulação de Precificação*\n\n` +
+            agentShareLines(profile) +
             `${params.mode === 'calculate_listing_price' ? '💰 *Valor Líquido Desejado:*' : '🏷️ *Preço de Anúncio:*'} ${formatCurrency(params.inputValue)}\n` +
             `📊 *Comissão:* ${params.commissionPercent}%\n` +
             `📉 *Margem de Negociação:* ${params.negotiationMarginPercent}%\n\n` +
