@@ -1,96 +1,61 @@
-// Carregamento condicionado ao consentimento de cookies do Pixel da Meta e do Google Ads.
-// Antes, os dois eram inicializados direto no index.html, sem checar nada — o que
-// contraria a própria Política de Cookies ("cookies analíticos, publicitários e outras
-// tecnologias não necessárias não deverão carregar antes da escolha"). Agora o
-// carregamento só acontece quando `loadMetaPixel`/`loadGoogleAds` é chamado, e isso só
-// acontece depois que o CookieConsentBanner confirma que a categoria "Publicidade" foi
-// aceita (seja na primeira escolha, seja numa mudança posterior de preferência).
+// Ponte entre o site e o Google Tag Manager (GTM-PCG98HDP, carregado no index.html).
+// O Pixel da Meta, o Google Ads e o GA4 NÃO ficam mais no código: são tags configuradas
+// dentro do GTM. O código só (1) avisa o GTM do consentimento de cookies e (2) empurra
+// eventos no dataLayer. O consentimento padrão (tudo negado) é definido no index.html,
+// antes do GTM.
 
 declare global {
     interface Window {
-        fbq?: (...args: any[]) => void;
-        _fbq?: any;
         dataLayer?: any[];
-        gtag?: (...args: any[]) => void;
-        gtag_report_conversion?: (url?: string) => boolean;
     }
 }
 
-const META_PIXEL_ID = '999422036479489';
-const GOOGLE_ADS_ID = 'AW-17945048072';
-const GOOGLE_ADS_CONVERSION_SEND_TO = 'AW-17945048072/hx2yCK2Wn_YbEIjo7uxC';
-
-let metaPixelLoaded = false;
-let googleAdsLoaded = false;
-
-export function loadMetaPixel() {
-    if (metaPixelLoaded || typeof window === 'undefined') return;
-    metaPixelLoaded = true;
-
-    (function (f: any, b: Document, e: string, v: string) {
-        if (f.fbq) return;
-        const n: any = (f.fbq = function (...args: any[]) {
-            n.callMethod ? n.callMethod.apply(n, args) : n.queue.push(args);
-        });
-        if (!f._fbq) f._fbq = n;
-        n.push = n;
-        n.loaded = true;
-        n.version = '2.0';
-        n.queue = [];
-        const t = b.createElement(e) as HTMLScriptElement;
-        t.async = true;
-        t.src = v;
-        const s = b.getElementsByTagName(e)[0];
-        s.parentNode?.insertBefore(t, s);
-    })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
-
-    window.fbq?.('init', META_PIXEL_ID);
-    window.fbq?.('track', 'PageView');
+export interface ConsentChoice {
+    analytics: boolean;
+    advertising: boolean;
 }
 
-export function loadGoogleAds() {
-    if (googleAdsLoaded || typeof window === 'undefined') return;
-    googleAdsLoaded = true;
-
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = `https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}`;
-    document.head.appendChild(script);
-
+function getDataLayer(): any[] {
     window.dataLayer = window.dataLayer || [];
-    function gtag(...args: any[]) {
-        window.dataLayer!.push(args);
-    }
-    window.gtag = gtag;
-    gtag('js', new Date());
-    gtag('config', GOOGLE_ADS_ID);
+    return window.dataLayer;
+}
 
-    window.gtag_report_conversion = function (url?: string) {
-        // Rede de segurança: o event_callback do Google Ads só dispara se a
-        // chamada de conversão terminar de verdade — e isso trava (às vezes
-        // pra sempre) quando um bloqueador de anúncios, o modo de privacidade
-        // do navegador ou uma conexão ruim impedem a requisição de completar.
-        // Sem essa rede de segurança, a pessoa clica em "comprar" e a página
-        // simplesmente não faz nada — foi exatamente o bug relatado ("nenhum
-        // link de compra da LP funciona"). Redireciona uma única vez, seja
-        // pelo callback do Google (caminho normal) ou, no máximo em 1s, pelo
-        // timeout — o que vier primeiro. O cliente nunca pode ficar preso
-        // aqui esperando uma métrica de anúncio.
-        let redirected = false;
-        const redirectOnce = () => {
-            if (redirected) return;
-            redirected = true;
-            if (typeof url !== 'undefined') {
-                window.location.href = url;
-            }
-        };
-        gtag('event', 'conversion', {
-            send_to: GOOGLE_ADS_CONVERSION_SEND_TO,
-            value: 1.0,
-            currency: 'BRL',
-            event_callback: redirectOnce,
-        });
-        setTimeout(redirectOnce, 1000);
-        return false;
+// Avisa o GTM da escolha da pessoa no banner de cookies (Consent Mode v2).
+export function updateGtmConsent(choice: ConsentChoice) {
+    if (typeof window === 'undefined') return;
+    const dl = getDataLayer();
+    // O Google exige o objeto "arguments" no dataLayer (não um array), por isso o
+    // gtag é uma função comum e não uma arrow function.
+    const gtag: (...args: any[]) => void = function () {
+        // eslint-disable-next-line prefer-rest-params
+        dl.push(arguments);
     };
+    gtag('consent', 'update', {
+        ad_storage: choice.advertising ? 'granted' : 'denied',
+        ad_user_data: choice.advertising ? 'granted' : 'denied',
+        ad_personalization: choice.advertising ? 'granted' : 'denied',
+        analytics_storage: choice.analytics ? 'granted' : 'denied',
+    });
+    dl.push({ event: 'consent_update' });
+}
+
+// Evento simples no dataLayer (view_item, sign_up, ...).
+export function pushToDataLayer(event: Record<string, any>) {
+    if (typeof window === 'undefined') return;
+    getDataLayer().push(event);
+}
+
+// Evento + redirecionamento (ex.: begin_checkout antes de ir para a Hotmart). Redireciona
+// uma única vez: pelo eventCallback do GTM (quando as tags terminam) ou, no máximo em 1s,
+// pelo timeout. Sem esse timeout, quem usa bloqueador de anúncios ou GTM bloqueado ficaria
+// com o botão de compra sem fazer nada, porque o callback nunca dispara.
+export function pushToDataLayerAndGo(event: Record<string, any>, url: string) {
+    let went = false;
+    const go = () => {
+        if (went) return;
+        went = true;
+        window.location.href = url;
+    };
+    getDataLayer().push({ ...event, eventCallback: go, eventTimeout: 1000 });
+    setTimeout(go, 1000);
 }

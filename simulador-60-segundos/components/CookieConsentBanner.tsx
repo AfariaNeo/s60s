@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Cookie } from 'lucide-react';
-import { loadGoogleAds, loadMetaPixel } from '../services/consentScripts';
+import { updateGtmConsent } from '../services/consentScripts';
 
 const STORAGE_KEY = 's60s_cookie_consent';
 
@@ -21,14 +21,16 @@ function readStoredConsent(): CookieConsent | null {
 }
 
 function applyConsent(consent: CookieConsent) {
-    // Google Analytics não está implementado neste projeto hoje — a categoria "Analíticos"
-    // existe pra já cobrir isso no dia em que for adicionado. Google Ads e Meta Pixel são
-    // os dois classificados como "Publicidade" na Política de Cookies.
-    if (consent.advertising) {
-        loadMetaPixel();
-        loadGoogleAds();
-    }
+    // Quem carrega Pixel da Meta, Google Ads e GA4 agora é o GTM (index.html). Aqui só
+    // avisamos o GTM da escolha: ele libera ou bloqueia cada tag conforme o consentimento.
+    updateGtmConsent({ analytics: consent.analytics, advertising: consent.advertising });
 }
+
+// Escolha já salva: avisa o GTM assim que o código carrega (antes de o app terminar de
+// checar o login), para as tags não ficarem esperando o banner montar. Se não houver
+// escolha salva, o padrão "negado" do index.html continua valendo até a pessoa decidir.
+const storedAtLoad = typeof window !== 'undefined' ? readStoredConsent() : null;
+if (storedAtLoad) applyConsent(storedAtLoad);
 
 // Banner de cookies em dois níveis (aviso inicial + painel de preferências por categoria),
 // seguindo o texto já aprovado no pacote jurídico. Cookies não necessários (analíticos e
@@ -41,10 +43,9 @@ export default function CookieConsentBanner() {
     const [advertising, setAdvertising] = useState(false);
 
     useEffect(() => {
-        const stored = readStoredConsent();
-        if (stored) {
-            applyConsent(stored);
-        } else {
+        // Se já existe escolha salva, o consentimento foi enviado ao GTM no carregamento
+        // do módulo (acima). Aqui só decidimos se o banner aparece.
+        if (!readStoredConsent()) {
             setVisible(true);
         }
 

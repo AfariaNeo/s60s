@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { pushToDataLayer, pushToDataLayerAndGo } from '../services/consentScripts';
 import {
     ArrowRight,
     CheckCircle2,
@@ -279,24 +280,9 @@ export default function LandingPlanilha({ publico = 'corretor' }: { publico?: Pu
         };
     }, []);
 
-    // Pixel da Meta: ViewContent ao abrir a página (o Pixel só existe depois do aceite de
-    // cookies, por isso sempre checamos se window.fbq está disponível).
+    // GTM: view_item ao abrir a página (o Pixel da Meta e o Google Ads são configurados no GTM).
     useEffect(() => {
-        try {
-            // @ts-ignore
-            if (typeof window.fbq === 'function') {
-                // @ts-ignore
-                window.fbq('track', 'ViewContent', {
-                    content_name: 'Planilha 60 Segundos: SAC x PRICE',
-                    content_type: 'product',
-                    content_category: publico,
-                    value: 37,
-                    currency: 'BRL',
-                });
-            }
-        } catch (e) {
-            // nunca deixar o pixel quebrar a página
-        }
+        pushToDataLayer({ event: 'view_item', produto: 'planilha', publico, value: 37, currency: 'BRL' });
     }, []);
 
     // Monta o link do checkout repassando as UTMs da visita (a Hotmart guarda isso no
@@ -305,7 +291,7 @@ export default function LandingPlanilha({ publico = 'corretor' }: { publico?: Pu
         try {
             const url = new URL(PLANILHA_CHECKOUT_URL);
             const atual = new URLSearchParams(window.location.search);
-            ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach((k) => {
+            ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'gclid'].forEach((k) => {
                 const v = atual.get(k);
                 if (v) url.searchParams.set(k, v);
             });
@@ -321,24 +307,12 @@ export default function LandingPlanilha({ publico = 'corretor' }: { publico?: Pu
             console.warn('PLANILHA_CHECKOUT_URL ainda não foi configurado em LandingPlanilha.tsx');
             return;
         }
-        try {
-            // @ts-ignore
-            if (typeof window.fbq === 'function') {
-                // @ts-ignore
-                window.fbq('track', 'InitiateCheckout', {
-                    content_name: 'Planilha 60 Segundos: SAC x PRICE',
-                    content_category: publico,
-                    value: 37,
-                    currency: 'BRL',
-                });
-            }
-        } catch (e) {
-            // segue pro checkout mesmo se o pixel falhar
-        }
-        // pequena folga pro pixel enviar o evento antes da troca de página
-        setTimeout(() => {
-            window.location.href = buildCheckoutUrl();
-        }, 150);
+        // GTM: begin_checkout e depois a Hotmart (redireciona quando as tags terminam ou, no
+        // máximo, em 1s, para nunca travar o botão de compra).
+        pushToDataLayerAndGo(
+            { event: 'begin_checkout', produto: 'planilha', publico, value: 37, currency: 'BRL' },
+            buildCheckoutUrl()
+        );
     };
 
     const isMp4 = VIDEO_URL.toLowerCase().endsWith('.mp4');

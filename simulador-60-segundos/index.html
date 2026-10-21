@@ -5,11 +5,28 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- O Pixel da Meta e o Google Ads (gtag) NÃO carregam mais automaticamente aqui.
-       Por exigência da Política de Cookies, cookies de publicidade só podem carregar
-       depois que a pessoa escolhe aceitá-los no banner de consentimento — o carregamento
-       real agora acontece via services/consentScripts.ts, disparado pelo
-       CookieConsentBanner.tsx (ou automaticamente, se já houver uma escolha salva). -->
+  <!-- Consentimento padrão do Google (Consent Mode). Precisa vir ANTES do GTM: tudo começa
+       negado até a pessoa escolher no banner de cookies (CookieConsentBanner.tsx envia o
+       'consent update' com a escolha). -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('consent', 'default', {
+      ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied',
+      analytics_storage: 'denied', wait_for_update: 500
+    });
+  </script>
+
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-PCG98HDP');</script>
+  <!-- End Google Tag Manager -->
+
+  <!-- Pixel da Meta, Google Ads e GA4 são configurados DENTRO do GTM (não ficam mais no código).
+       O site só empurra eventos no dataLayer (services/consentScripts.ts) e avisa o consentimento. -->
 
   <title>Simulador 60 Segundos</title>
   <meta name="theme-color" content="#0b1324" />
@@ -49,6 +66,10 @@
 </head>
 
 <body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PCG98HDP"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
   <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>

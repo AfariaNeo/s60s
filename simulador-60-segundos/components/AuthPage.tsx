@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { pushToDataLayer } from '../services/consentScripts';
 import { Lock, Mail, Loader2, LogIn, AlertCircle, CheckCircle2, ArrowLeft, KeyRound, User as UserIcon, UserPlus } from 'lucide-react';
 
 // Cadastro voltou a existir aqui (modelo gratuito com uso restrito, ver Dashboard.tsx /
@@ -56,6 +57,8 @@ export default function AuthPage() {
 
         try {
             await signUp(signupEmail, signupPassword, name.trim() || undefined);
+            // GTM: cadastro concluído (conta criada com sucesso), não só o clique no botão.
+            pushToDataLayer({ event: 'sign_up', produto: 'app' });
             setView('signup_sent');
         } catch (err: any) {
             setSignupError(err.message || 'Não foi possível criar sua conta. Tente novamente.');

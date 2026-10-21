@@ -14,6 +14,7 @@ import {
     AlertTriangle,
     Zap,
 } from 'lucide-react';
+import { pushToDataLayerAndGo } from '../services/consentScripts';
 
 // =====================================================================================
 // LANDING PAGE — MODELO "NOBRAIN" (baixo ticket / decisão imediata)
@@ -111,32 +112,17 @@ export default function LandingPageNoBrain() {
     // Modelo atual: cadastro é grátis, com uso restrito nas ferramentas pagas e
     // Comissão sempre liberada. Quem já decidiu assinar direto usa handleDirectPurchase.
     const handleAction = () => {
-        // Pixel da Meta: dispara o evento de Lead pro Facebook/Instagram Ads
-        // conseguirem medir conversão e otimizar entrega.
-        // @ts-ignore
-        if (typeof window.fbq === 'function') {
-            // @ts-ignore
-            window.fbq('track', 'Lead');
-        }
         navigate('/login?cadastro=1');
     };
 
     // Só usado pelo botão secundário de quem já decidiu e quer pular direto pro
-    // pagamento, sem passar pelo cadastro grátis. gtag_report_conversion aceita
-    // qualquer URL e redireciona pra ela depois de registrar a conversão do Google Ads.
+    // pagamento, sem passar pelo cadastro grátis. Registra o begin_checkout no GTM e
+    // redireciona para a Hotmart (com timeout de segurança, ver pushToDataLayerAndGo).
     const handleDirectPurchase = () => {
-        // @ts-ignore
-        if (typeof window.fbq === 'function') {
-            // @ts-ignore
-            window.fbq('track', 'Lead');
-        }
-        // @ts-ignore
-        if (typeof window.gtag_report_conversion === 'function') {
-            // @ts-ignore
-            window.gtag_report_conversion(HOTMART_CHECKOUT_URL);
-        } else {
-            window.location.href = HOTMART_CHECKOUT_URL;
-        }
+        pushToDataLayerAndGo(
+            { event: 'begin_checkout', produto: 'app', value: 67, currency: 'BRL' },
+            HOTMART_CHECKOUT_URL
+        );
     };
 
     const scrollToSection = (id: string) => {

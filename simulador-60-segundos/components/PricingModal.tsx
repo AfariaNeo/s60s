@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { Check, X } from 'lucide-react';
 import { UserPlan } from '../types';
 import { useAnalytics } from '../hooks/useAnalytics';
+import { pushToDataLayerAndGo } from '../services/consentScripts';
 
 // Link de checkout direto do Hotmart — clicar em "Assinar Agora" leva pra cá
 // (fluxo antigo via Asaas/create-payment foi removido).
@@ -31,12 +32,11 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPl
   const handleSubscribe = () => {
     track('button_click', 'upgrade_button_clicked', { plan: 'plus', billingCycle: 'annual' }, 'PricingModal');
     track('conversion', 'redirected_to_hotmart_checkout', {}, 'PricingModal');
-    // @ts-ignore
-    if (typeof window.fbq === 'function') {
-      // @ts-ignore
-      window.fbq('track', 'Lead');
-    }
-    window.location.href = HOTMART_CHECKOUT_URL;
+    // GTM: begin_checkout do app, depois segue para a Hotmart (com timeout de segurança).
+    pushToDataLayerAndGo(
+      { event: 'begin_checkout', produto: 'app', value: 67, currency: 'BRL' },
+      HOTMART_CHECKOUT_URL
+    );
   };
 
   if (!isOpen) return null;

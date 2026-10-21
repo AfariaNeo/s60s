@@ -4,7 +4,6 @@ import { Loader2 } from 'lucide-react';
 import AuthPage from './components/AuthPage';
 import Dashboard from './components/Dashboard';
 import { useAuth } from './hooks/useAuth';
-import { AnalyticsTracker, initGA } from './components/AnalyticsTracker';
 import { AdminDashboard } from './components/AdminDashboard';
 import LandingPageNoBrain from './components/LandingPageNoBrain';
 import SetNewPasswordScreen from './components/SetNewPasswordScreen';
@@ -38,9 +37,6 @@ function RouteAnalytics({ userId }: { userId?: string }) {
 
   return null;
 }
-
-// Initialize GA4
-initGA();
 
 // Chave usada no localStorage pra guardar a atribuição de anúncio do primeiro toque
 // (utm_source/medium/campaign, fbclid e os cookies _fbp/_fbc do Pixel da Meta).
@@ -111,7 +107,6 @@ export default function SimulatorApp() {
 
   return (
     <BrowserRouter>
-      <AnalyticsTracker />
       <RouteAnalytics userId={user?.id} />
       {/* Global — aparece em qualquer rota (LP pública ou app já logado), já que o
           Pixel da Meta e o Google Ads carregam a nível de aplicação, não só na LP. */}
