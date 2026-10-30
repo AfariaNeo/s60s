@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SimulationParams, ComparisonResult } from '../types';
 import { calculateSimulation } from '../utils/finance';
 import { getFinancialAdvice } from '../services/geminiService';
@@ -12,8 +12,32 @@ const DEFAULT_PARAMS: SimulationParams = {
     bankCostPercent: 0,
 };
 
+// Guarda os campos da simulação na sessão do navegador: a tela de Indicadores
+// Econômicos é outra rota, então o Dashboard desmonta ao abrir e o formulário voltava
+// zerado. Com isso, quem consulta a taxa do banco e volta encontra tudo preenchido.
+// sessionStorage (não localStorage) pra durar só enquanto a aba estiver aberta.
+export const SIMULATION_STORAGE_KEY = 's60s_financing_params';
+
+function loadSavedParams(): SimulationParams {
+    try {
+        const raw = sessionStorage.getItem(SIMULATION_STORAGE_KEY);
+        if (raw) return { ...DEFAULT_PARAMS, ...JSON.parse(raw) };
+    } catch {
+        // Navegador bloqueou o storage ou o valor salvo está corrompido: começa do padrão
+    }
+    return DEFAULT_PARAMS;
+}
+
 export function useSimulation() {
-    const [params, setParams] = useState<SimulationParams>(DEFAULT_PARAMS);
+    const [params, setParams] = useState<SimulationParams>(loadSavedParams);
+
+    useEffect(() => {
+        try {
+            sessionStorage.setItem(SIMULATION_STORAGE_KEY, JSON.stringify(params));
+        } catch {
+            // Sem storage disponível, só não persiste
+        }
+    }, [params]);
     const [results, setResults] = useState<ComparisonResult | null>(null);
     const [aiAnalysis, setAiAnalysis] = useState<string>('');
     const [loadingAnalysis, setLoadingAnalysis] = useState(false);

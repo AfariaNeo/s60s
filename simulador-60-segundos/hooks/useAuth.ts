@@ -79,6 +79,8 @@ export function useAuth() {
         // Remover apenas tokens do Supabase, não localStorage completo
         localStorage.removeItem('sb-auth-token');
         localStorage.removeItem('sb-refresh-token');
+        // Campos da simulação salvos na sessão (ver hooks/useSimulation.ts) não passam pro próximo login
+        try { sessionStorage.removeItem('s60s_financing_params'); } catch { /* storage indisponível */ }
         setUser(null);
     };
 
